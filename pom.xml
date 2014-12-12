@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>de.kune</groupId>
+  <artifactId>easyvote</artifactId>
+  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>GWT Maven Archetype</name>
+  <description>
+  Build WAR file: 
+  mvn clean gwt:generateAsync compile gwt:compile war:war
+  Run in tomcat: 
+  mvn clean gwt:generateAsync compile gwt:compile war:war tomcat7:run
+  Run in DEV mode: 
+  mvn gwt:compile gwt:generateAsync gwt:run -DrunTarget=manager.html
+  </description>
+
+  <properties>
+    <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
+
+    <maven.tomcat.port>8082</maven.tomcat.port>
+    <maven.tomcat.ajp.port>8182</maven.tomcat.ajp.port>
+    <maven.tomcat.path>easyvote</maven.tomcat.path>
+
+    <!-- Convenience property to set the GWT version -->
+    <gwtVersion>2.7.0</gwtVersion>
+
+    <!-- GWT needs at least java 1.6 -->
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.google.gwt</groupId>
+        <artifactId>gwt</artifactId>
+        <version>${gwtVersion}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-servlet</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-dev</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.gwt-charts</groupId>
+      <artifactId>gwt-charts</artifactId>
+      <version>0.9.10</version>
+    </dependency>
+
+    <dependency>
+      <groupId>net.glxn.qrgen</groupId>
+      <artifactId>javase</artifactId>
+      <version>2.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <!-- Output classes directly into the webapp, so that IDEs and "mvn process-classes" 
+      update them in DevMode -->
+    <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
+
+    <plugins>
+
+      <!-- GWT Maven Plugin -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>gwt-maven-plugin</artifactId>
+        <version>2.7.0</version>
+<!--         <executions> -->
+<!--           <execution> -->
+<!--             <goals> -->
+<!--               <goal>compile</goal> -->
+<!--               <goal>test</goal> -->
+<!--               <goal>generateAsync</goal> -->
+<!--             </goals> -->
+<!--           </execution> -->
+<!--         </executions> -->
+<!--         Plugin configuration. There are many available options, see  -->
+<!--           gwt-maven-plugin documentation at codehaus.org -->
+<!--         <configuration> -->
+<!--           <inplace>false</inplace> -->
+<!--           <runTarget>easyvote.html</runTarget> -->
+<!--           <modules> -->
+<!--             <module>de.kune.manager</module> -->
+<!--             <module>de.kune.voter</module> -->
+<!--           </modules> -->
+<!--         </configuration> -->
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.3</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat7-maven-plugin</artifactId>
+        <version>2.0</version>
+        <configuration>
+<!--         <staticContextDocbase></staticContextDocbase> -->
+     <warSourceDirectory>${project.build.directory}/${project.build.finalName}</warSourceDirectory>
+          <path>${tomcat.context}</path>
+          <systemProperties>
+            <JAVA_OPTS>-XX:MaxPermSize=256m</JAVA_OPTS>
+          </systemProperties>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>
