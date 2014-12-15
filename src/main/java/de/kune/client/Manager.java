@@ -21,6 +21,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.ToggleButton;
 import com.googlecode.gwt.charts.client.ChartLoader;
 import com.googlecode.gwt.charts.client.ChartPackage;
 import com.googlecode.gwt.charts.client.ColumnType;
@@ -86,11 +87,12 @@ public class Manager implements EntryPoint {
 		chartLoader.loadApi(new Runnable() {
 			@Override
 			public void run() {
-				SimplePanel panel = new SimplePanel();
-				panel.setHeight("200px");
-				panel.setWidth("100%");
-				panel.add(getVotesChart());
-				RootPanel.get().add(panel);
+				// SimplePanel panel = new SimplePanel();
+				// panel.setHeight("200px");
+				// panel.setWidth("100%");
+				// panel.add(getVotesChart());
+				// RootPanel.get().add(panel);
+				getVotesChart();
 			}
 		});
 
@@ -180,9 +182,42 @@ public class Manager implements EntryPoint {
 		}
 	};
 
+	private void evaluateVotes() {
+		GWT.log("Evaluating Votes for " + votingSessionId);
+		votingService.getVotes(votingSessionId,
+				new AsyncCallback<Map<String, Set<String>>>() {
+
+					@Override
+					public void onSuccess(Map<String, Set<String>> result) {
+						GWT.log("Current votes: " + result);
+						Manager.this.votes = result;
+						updateVotesChart();
+					}
+
+					@Override
+					public void onFailure(Throwable caught) {
+						GWT.log("Could not get votes");
+					}
+				});
+	}
+
 	private BarChart votesChart;
 	protected String[] options;
 	private BarChartOptions voteChartOptions;
+	private ToggleButton realTimeUpdateButton;
+	private Anchor voterImageQrLink;
+
+	private SimplePanel votesChartPanel;
+
+	private SimplePanel getVotesChartPanel() {
+		if (votesChartPanel == null) {
+			votesChartPanel = new SimplePanel();
+			votesChartPanel.setHeight("200px");
+			votesChartPanel.setWidth("100%");
+			votesChartPanel.add(getVotesChart());
+		}
+		return votesChartPanel;
+	}
 
 	private BarChart getVotesChart() {
 		if (votesChart == null) {
@@ -202,6 +237,10 @@ public class Manager implements EntryPoint {
 		}
 		return voteChartOptions;
 	}
+	
+	private void resetVotesChart() {
+		votes = null;
+	}
 
 	private void updateVotesChart() {
 		GWT.log("Updating votes chart");
@@ -210,14 +249,18 @@ public class Manager implements EntryPoint {
 		votesData.addColumn(ColumnType.STRING, "Answer");
 		votesData.addColumn(ColumnType.NUMBER, "Count");
 		Map<String, Integer> answerCounts = new LinkedHashMap<String, Integer>();
-		for (String option : options) {
-			answerCounts.put(option, 0);
+		if (options != null) {
+			for (String option : options) {
+				answerCounts.put(option, 0);
+			}
 		}
-		for (Set<String> vote : votes.values()) {
-			for (String option : vote) {
-				Integer count = answerCounts.get(option);
-				if (count != null) {
-					answerCounts.put(option, ++count);
+		if (votes != null) {
+			for (Set<String> vote : votes.values()) {
+				for (String option : vote) {
+					Integer count = answerCounts.get(option);
+					if (count != null) {
+						answerCounts.put(option, ++count);
+					}
 				}
 			}
 		}
@@ -233,29 +276,52 @@ public class Manager implements EntryPoint {
 		this.votingSessionId = votingSessionId;
 		RootPanel.get().add(getVotingSessionPanel());
 		getVotingSessionPanel().clear();
+		SimplePanel qrCodePanel = new SimplePanel();
+		getVotingSessionPanel().add(qrCodePanel);
+		updateVoterImageQrLink();
+		qrCodePanel.add(getVoterQrCodeLink());
+
+		getVotingSessionPanel().add(getVotesChartPanel());
+		getVotesChartPanel().setVisible(false);
+		// getVotingSessionPanel().add(getVotesChart());
+		// updateVotesChart();
+
 		getVotingSessionPanel().add(getStartNewVotingRoundButton());
-		getStartNewVotingRoundButton().setEnabled(true);
+		getStartNewVotingRoundButton().setVisible(true);
 		getVotingSessionPanel().add(getEndVotingRoundButton());
+		getVotingSessionPanel().add(getRealTimeUpdateButton());
+		getRealTimeUpdateButton().setVisible(false);
 		getVotingSessionPanel().add(getCloseVotingSessionButton());
-		getEndVotingRoundButton().setEnabled(false);
+		getEndVotingRoundButton().setVisible(false);
 		getVotingSessionPanel().setVisible(true);
 		getStartNewVotingRoundButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				getStartNewVotingRoundButton().setEnabled(false);
+				getStartNewVotingRoundButton().setVisible(false);
 				final String[] options = new String[] { "A", "B", "C" };
 				votingService.beginVotingRound(Manager.this.votingSessionId,
 						"New Voting Round", options, new AsyncCallback<Void>() {
 							@Override
 							public void onSuccess(Void result) {
 								Manager.this.options = options;
-								getEndVotingRoundButton().setEnabled(true);
-								evaluateVotesTimer.schedule(1000);
+								getVoterQrCodeLink().setVisible(false);
+								getVotesChartPanel().setVisible(true);
+								getVotingSessionPanel().setVisible(true);
+								resetVotesChart();
+								updateVotesChart();
+								getVotesChart().redraw();
+								getEndVotingRoundButton().setVisible(true);
+								getRealTimeUpdateButton().setVisible(true);
+								getCloseVotingSessionButton().setVisible(false);
+								if (getRealTimeUpdateButton().isDown()) {
+									evaluateVotesTimer.schedule(1000);
+								}
 							}
 
 							@Override
 							public void onFailure(Throwable caught) {
-								getStartNewVotingRoundButton().setEnabled(true);
+								getStartNewVotingRoundButton().setVisible(true);
+								getRealTimeUpdateButton().setVisible(false);
 								evaluateVotesTimer.cancel();
 							}
 						});
@@ -264,17 +330,22 @@ public class Manager implements EntryPoint {
 		getEndVotingRoundButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				getEndVotingRoundButton().setEnabled(false);
+				getEndVotingRoundButton().setVisible(false);
 				votingService.endVotingRound(Manager.this.votingSessionId,
 						new AsyncCallback<Void>() {
 							@Override
 							public void onSuccess(Void result) {
-								getStartNewVotingRoundButton().setEnabled(true);
+								getStartNewVotingRoundButton().setVisible(true);
+								getRealTimeUpdateButton().setVisible(false);
+								getCloseVotingSessionButton().setVisible(true);
+								evaluateVotes();
 							}
 
 							@Override
 							public void onFailure(Throwable caught) {
-								getEndVotingRoundButton().setEnabled(true);
+								getEndVotingRoundButton().setVisible(true);
+								getRealTimeUpdateButton().setVisible(true);
+								evaluateVotes();
 							}
 						});
 			}
@@ -286,7 +357,6 @@ public class Manager implements EntryPoint {
 				getVotingSessionPanel().setVisible(false);
 				votingService.closeVotingSession(Manager.this.votingSessionId,
 						new AsyncCallback<Void>() {
-
 							@Override
 							public void onSuccess(Void result) {
 								getStartSessionPanel().setVisible(true);
@@ -299,16 +369,43 @@ public class Manager implements EntryPoint {
 						});
 			}
 		});
+		getRealTimeUpdateButton().addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				if (((ToggleButton) event.getSource()).isDown()) {
+					evaluateVotesTimer.schedule(1000);
+				} else {
+					evaluateVotesTimer.cancel();
+				}
+			}
+		});
+	}
+
+	private Anchor getVoterQrCodeLink() {
+		if (voterImageQrLink == null) {
+			updateVoterImageQrLink();
+		}
+		return voterImageQrLink;
+	}
+
+	private void updateVoterImageQrLink() {
 		String voterUrl = GWT.getModuleBaseURL().replace(
 				GWT.getModuleName() + "/", "")
 				+ "voter.html?votingSessionId=" + votingSessionId;
-		getVotingSessionPanel().add(new Label("Voter URL: "));
-		getVotingSessionPanel().add(new Anchor(voterUrl, voterUrl, "_blank"));
-		Image image;
-		image = new Image(GWT.getModuleBaseURL().replace(
+		Image image = new Image(GWT.getModuleBaseURL().replace(
 				GWT.getModuleName() + "/", "")
 				+ "qr/img.png?url=" + URL.encode(voterUrl));
-		RootPanel.get().add(image);
+		voterImageQrLink = new Anchor("", voterUrl, "_blank");
+		voterImageQrLink.getElement().appendChild(image.getElement());
+
+	}
+
+	private ToggleButton getRealTimeUpdateButton() {
+		if (realTimeUpdateButton == null) {
+			realTimeUpdateButton = new ToggleButton("Real-Time Update");
+		}
+		return realTimeUpdateButton;
 	}
 
 }

@@ -12,10 +12,10 @@
     Build WAR file: 
     mvn clean install
     (mvn clean gwt:generateAsync compile gwt:compile war:war)
-    Run in tomcat: 
+    Run in tomcat:
     mvn clean gwt:generateAsync compile gwt:compile war:war tomcat7:run
     Run in DEV mode: 
-    mvn gwt:compile gwt:generateAsync gwt:run -DrunTarget=manager.html
+    mvn gwt:generateAsync package gwt:run -DrunTarget=manager.html 
   </description>
 
   <properties>

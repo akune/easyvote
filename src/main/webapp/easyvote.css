@@ -33,10 +33,15 @@ h1 {
   margin: 15px 6px 6px;
 }
 
-.gwt-ToggleButton {
+.gwt-Button,.gwt-ToggleButton {
+	display: inline-block
+}
+
+.voter .gwt-ToggleButton {
 	text-align: center;
 	height: 100px;
 	line-height: 100px;
 	vertical-align: middle;
 	font-size: 30pt;
+	display: block;
 }
