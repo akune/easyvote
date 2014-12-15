@@ -5,10 +5,26 @@
 
 <web-app>
 
+  <!-- Filters -->
+  <filter>
+    <filter-name>gwtCacheControlFilter</filter-name>
+    <filter-class>de.kune.server.filter.GwtCacheControlFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>gwtCacheControlFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
   <!-- Servlets -->
   <servlet>
     <servlet-name>votingServlet</servlet-name>
     <servlet-class>de.kune.server.VotingServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet>
+    <servlet-name>qrCodeServlet</servlet-name>
+    <servlet-class>de.kune.server.QrServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
@@ -20,10 +36,15 @@
     <servlet-name>votingServlet</servlet-name>
     <url-pattern>/voter/vote</url-pattern>
   </servlet-mapping>
+  
+  <servlet-mapping>
+    <servlet-name>qrCodeServlet</servlet-name>
+    <url-pattern>/qr/img.png</url-pattern>
+  </servlet-mapping>
 
   <!-- Default page to serve -->
-<!--   <welcome-file-list> -->
-<!--     <welcome-file>manager.html</welcome-file> -->
-<!--   </welcome-file-list> -->
+  <!-- <welcome-file-list> -->
+  <!-- <welcome-file>manager.html</welcome-file> -->
+  <!-- </welcome-file-list> -->
 
 </web-app>

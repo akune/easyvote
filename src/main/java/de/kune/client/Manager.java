@@ -9,11 +9,13 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -229,9 +231,6 @@ public class Manager implements EntryPoint {
 
 	private void beginVotingSession(String votingSessionId) {
 		this.votingSessionId = votingSessionId;
-		// Image image = new Image(GWT.getModuleBaseURL() +
-		// "/client-qr-"+votingSessionId+".png");
-		// RootPanel.get().add(image);
 		RootPanel.get().add(getVotingSessionPanel());
 		getVotingSessionPanel().clear();
 		getVotingSessionPanel().add(getStartNewVotingRoundButton());
@@ -300,10 +299,16 @@ public class Manager implements EntryPoint {
 						});
 			}
 		});
-		String voterUrl = GWT.getModuleBaseURL().replace(GWT.getModuleName() + "/", "") + "voter.html?votingSessionId=" + votingSessionId;
+		String voterUrl = GWT.getModuleBaseURL().replace(
+				GWT.getModuleName() + "/", "")
+				+ "voter.html?votingSessionId=" + votingSessionId;
 		getVotingSessionPanel().add(new Label("Voter URL: "));
 		getVotingSessionPanel().add(new Anchor(voterUrl, voterUrl, "_blank"));
-
+		Image image;
+		image = new Image(GWT.getModuleBaseURL().replace(
+				GWT.getModuleName() + "/", "")
+				+ "qr/img.png?url=" + URL.encode(voterUrl));
+		RootPanel.get().add(image);
 	}
 
 }
