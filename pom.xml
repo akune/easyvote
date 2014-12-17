@@ -10,7 +10,7 @@
   <name>GWT Maven Archetype</name>
   <description>
     Build WAR file: 
-    mvn clean install
+    mvn clean install war:war
     (mvn clean gwt:generateAsync compile gwt:compile war:war)
     Run in tomcat:
     mvn clean gwt:generateAsync compile gwt:compile war:war tomcat7:run

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletConfig;
@@ -104,7 +103,7 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public String join(String votingSessionId) {
-		String voterId = UUID.randomUUID().toString();
+		String voterId = UuidUtil.getCompressedUuid(true);
 		getVotingSession(votingSessionId).addVoter(voterId);
 		return voterId;
 	}

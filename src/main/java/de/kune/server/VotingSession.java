@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -36,7 +35,7 @@ public class VotingSession implements Serializable {
 	}
 
 	public VotingSession(String name) {
-		this.id = UUID.randomUUID().toString();
+		this.id = UuidUtil.getCompressedUuid(true);
 		this.name = name;
 		this.votes = new ConcurrentHashMap<String, Set<String>>();
 		this.voters = new ConcurrentSkipListSet<String>();

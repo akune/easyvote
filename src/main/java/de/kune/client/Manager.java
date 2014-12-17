@@ -26,9 +26,9 @@ import com.googlecode.gwt.charts.client.ChartLoader;
 import com.googlecode.gwt.charts.client.ChartPackage;
 import com.googlecode.gwt.charts.client.ColumnType;
 import com.googlecode.gwt.charts.client.DataTable;
-import com.googlecode.gwt.charts.client.corechart.BarChart;
-import com.googlecode.gwt.charts.client.corechart.BarChartOptions;
-import com.googlecode.gwt.charts.client.options.HAxis;
+import com.googlecode.gwt.charts.client.corechart.ColumnChart;
+import com.googlecode.gwt.charts.client.corechart.ColumnChartOptions;
+import com.googlecode.gwt.charts.client.options.VAxis;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -170,13 +170,13 @@ public class Manager implements EntryPoint {
 							GWT.log("Current votes: " + result);
 							Manager.this.votes = result;
 							updateVotesChart();
-							evaluateVotesTimer.schedule(5000);
+							evaluateVotesTimer.schedule(1000);
 						}
 
 						@Override
 						public void onFailure(Throwable caught) {
 							GWT.log("Could not get votes");
-							evaluateVotesTimer.schedule(5000);
+							evaluateVotesTimer.schedule(1000);
 						}
 					});
 		}
@@ -201,9 +201,9 @@ public class Manager implements EntryPoint {
 				});
 	}
 
-	private BarChart votesChart;
+	private ColumnChart votesChart;
 	protected String[] options;
-	private BarChartOptions voteChartOptions;
+	private ColumnChartOptions voteChartOptions;
 	private ToggleButton realTimeUpdateButton;
 	private Anchor voterImageQrLink;
 
@@ -219,21 +219,21 @@ public class Manager implements EntryPoint {
 		return votesChartPanel;
 	}
 
-	private BarChart getVotesChart() {
+	private ColumnChart getVotesChart() {
 		if (votesChart == null) {
-			votesChart = new BarChart();
+			votesChart = new ColumnChart();
 		}
 		return votesChart;
 	}
 
-	private BarChartOptions getVotesChartOptions() {
+	private ColumnChartOptions getVotesChartOptions() {
 		if (voteChartOptions == null) {
-			HAxis hAxis = HAxis.create();
-			hAxis.setMinValue(0);
-			hAxis.setMaxValue(30);
-			hAxis.setBaseline(0d);
-			voteChartOptions = BarChartOptions.create();
-			voteChartOptions.setHAxis(hAxis);
+			VAxis vAxis = VAxis.create();
+			vAxis.setMinValue(0);
+			vAxis.setMaxValue(10);
+			vAxis.setBaseline(0d);
+			voteChartOptions = ColumnChartOptions.create();
+			voteChartOptions.setVAxis(vAxis);
 		}
 		return voteChartOptions;
 	}
