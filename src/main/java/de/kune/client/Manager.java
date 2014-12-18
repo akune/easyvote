@@ -230,7 +230,7 @@ public class Manager implements EntryPoint {
 		if (voteChartOptions == null) {
 			VAxis vAxis = VAxis.create();
 			vAxis.setMinValue(0);
-			vAxis.setMaxValue(10);
+			vAxis.setMaxValue(20);
 			vAxis.setBaseline(0d);
 			voteChartOptions = ColumnChartOptions.create();
 			voteChartOptions.setVAxis(vAxis);
