@@ -20,7 +20,7 @@ public class QrServlet extends HttpServlet {
 			throws ServletException, IOException {
 		resp.setContentType("image/png");
 		ServletOutputStream os = resp.getOutputStream();
-		QRCode.from(req.getParameter("url")).to(ImageType.PNG).withSize(200, 200)
+		QRCode.from(req.getParameter("url")).to(ImageType.PNG).withSize(400, 400)
 				.writeTo(os);
 		os.flush();
 	}

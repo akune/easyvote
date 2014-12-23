@@ -11,12 +11,12 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -28,6 +28,8 @@ import com.googlecode.gwt.charts.client.ColumnType;
 import com.googlecode.gwt.charts.client.DataTable;
 import com.googlecode.gwt.charts.client.corechart.ColumnChart;
 import com.googlecode.gwt.charts.client.corechart.ColumnChartOptions;
+import com.googlecode.gwt.charts.client.options.Legend;
+import com.googlecode.gwt.charts.client.options.LegendPosition;
 import com.googlecode.gwt.charts.client.options.VAxis;
 
 /**
@@ -35,103 +37,224 @@ import com.googlecode.gwt.charts.client.options.VAxis;
  */
 public class Manager implements EntryPoint {
 
+	public static native void closeWindow() /*-{
+		$wnd.close();
+	}-*/;
+	
+	private Button closeVotingSessionButton;
+	private Button endVotingRoundButton;
+	private ToggleButton realTimeUpdateButton;
+	private final ClickHandler closeVotingSessiongHandler=new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			evaluateVotesTimer.cancel();
+			getVotingSessionPanel().setVisible(false);
+			votingService.closeVotingSession(Manager.this.votingSessionId,
+					new AsyncCallback<Void>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							getVotingSessionPanel().setVisible(false);
+						}
+
+						@Override
+						public void onSuccess(Void result) {
+							getStartSessionPanel().setVisible(true);
+							closeWindow();
+						}
+					});
+		}
+	};
+	private final ClickHandler endVotingRoundClickHandler = new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			getEndVotingRoundButton().setVisible(false);
+			votingService.endVotingRound(Manager.this.votingSessionId,
+					new AsyncCallback<Void>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							getEndVotingRoundButton().setVisible(true);
+							getRealTimeUpdateButton().setVisible(true);
+							evaluateVotes();
+						}
+
+						@Override
+						public void onSuccess(Void result) {
+							getStartNewVotingRoundButton().setVisible(true);
+							getRealTimeUpdateButton().setVisible(false);
+							getCloseVotingSessionButton().setVisible(true);
+							evaluateVotes();
+						}
+					});
+		}
+	};
+	private final Timer evaluateVotesTimer = new Timer() {
+		@Override
+		public void run() {
+			GWT.log("Evaluating Votes for " + votingSessionId);
+			votingService.getVotes(votingSessionId,
+					new AsyncCallback<Map<String, Set<String>>>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							GWT.log("Could not get votes");
+							evaluateVotesTimer.schedule(1000);
+						}
+
+						@Override
+						public void onSuccess(Map<String, Set<String>> result) {
+							GWT.log("Current votes: " + result);
+							Manager.this.votes = result;
+							updateVotesChart();
+							evaluateVotesTimer.schedule(1000);
+						}
+					});
+		}
+	};
+	private final ClickHandler newVotingRoundClickHandler = new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			getStartNewVotingRoundButton().setVisible(false);
+			final String[] options = new String[] { "A", "B", "C" };
+			votingService.beginVotingRound(Manager.this.votingSessionId,
+					"New Voting Round", options, new AsyncCallback<Void>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							getStartNewVotingRoundButton().setVisible(true);
+							getRealTimeUpdateButton().setVisible(false);
+							evaluateVotesTimer.cancel();
+						}
+
+						@Override
+						public void onSuccess(Void result) {
+							Manager.this.options = options;
+//							getVoterQrCodeLink().setVisible(false);
+							getVotesChartPanel().setVisible(true);
+							getVotingSessionPanel().setVisible(true);
+							resetVotesChart();
+							updateVotesChart();
+							getVotesChart().redraw();
+							getEndVotingRoundButton().setVisible(true);
+							getRealTimeUpdateButton().setVisible(true);
+							getCloseVotingSessionButton().setVisible(false);
+							if (getRealTimeUpdateButton().isDown()) {
+								evaluateVotesTimer.schedule(1000);
+							}
+						}
+					});
+		}
+	};
+	private final ClickHandler realTimeUpdateClickHandler = new ClickHandler() {
+
+		@Override
+		public void onClick(ClickEvent event) {
+			if (((ToggleButton) event.getSource()).isDown()) {
+				evaluateVotesTimer.schedule(1000);
+			} else {
+				evaluateVotesTimer.cancel();
+			}
+		}
+	};
+	private final ClickHandler startSessionClickHandler = new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			Window.open(GWT.getHostPageBaseURL()
+					+ "manager.html?startVotingSession="
+					+ getSessionNameTextBox().getText(), "_new",
+					"right=20,top=20,width=400,height=800,toolbar=0,resizable=0");
+		}
+	};
+	private String[] options;
+	private TextBox sessionNameTextBox;
+	private Button startNewVotingRoundButton;
+	private Button startSessionButton;
+	private Panel startSessionPanel;
+	private final String startVotingSession = Window.Location
+			.getParameter("startVotingSession");
+	private ColumnChartOptions voteChartOptions;
+	private Anchor voterImageQrLink;
+	protected Map<String, Set<String>> votes;
+	private ColumnChart votesChart;
+	private SimplePanel votesChartPanel;
+
 	/**
 	 * Create a remote service proxy to talk to the server-side Greeting
 	 * service.
 	 */
 	private final VotingServiceAsync votingService = GWT
 			.create(VotingService.class);
+
 	private String votingSessionId;
 	private FlowPanel votingSessionPanel;
-	private Button startNewVotingRoundButton;
-	private Button endVotingRoundButton;
-	private TextBox sessionNameTextBox;
-	private Button startSessionButton;
-	private Panel startSessionPanel;
-	private Button closeVotingSessionButton;
-	protected Map<String, Set<String>> votes;
+	private FlowPanel buttonsPanel;
+	
+	private FlowPanel getButtonsPanel() {
+		if (buttonsPanel == null) {
+			buttonsPanel = new FlowPanel();
+		}
+		return buttonsPanel;
+	}
+	
+	private void beginVotingSession(String votingSessionId) {
+		this.votingSessionId = votingSessionId;
+		RootPanel.get().add(getVotingSessionPanel());
+		getVotingSessionPanel().clear();
+		
+		getButtonsPanel().add(getStartNewVotingRoundButton());
+		getButtonsPanel().add(getEndVotingRoundButton());
+		getButtonsPanel().add(getRealTimeUpdateButton());
+		getButtonsPanel().add(getCloseVotingSessionButton());
+		getVotingSessionPanel().add(getButtonsPanel());
+		
+		getStartNewVotingRoundButton().setVisible(true);
+		getRealTimeUpdateButton().setVisible(false);
+		getEndVotingRoundButton().setVisible(false);
+		getVotingSessionPanel().setVisible(true);
+		getStartNewVotingRoundButton().addClickHandler(newVotingRoundClickHandler);
+		getEndVotingRoundButton().addClickHandler(endVotingRoundClickHandler);
+		getCloseVotingSessionButton().addClickHandler(closeVotingSessiongHandler);
+		getRealTimeUpdateButton().addClickHandler(realTimeUpdateClickHandler);
 
-	// private final Messages messages = GWT.create(Messages.class);
-
-	/**
-	 * This is the entry point method.
-	 */
-	public void onModuleLoad() {
-
-		RootPanel.get().add(new Label("Welcome to Easy Vote Manager"));
-		RootPanel.get().add(getStartSessionPanel());
-		getStartSessionPanel().add(getSessionNameTextBox());
-		getStartSessionPanel().add(getStartSessionButton());
-		getStartSessionButton().addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				getStartSessionPanel().setVisible(false);
-				votingService.createVotingSession(getSessionNameTextBox()
-						.getText(), new AsyncCallback<String>() {
-
-					@Override
-					public void onSuccess(String votingSessionId) {
-						beginVotingSession(votingSessionId);
-					}
-
-					@Override
-					public void onFailure(Throwable caught) {
-						getStartSessionPanel().setVisible(true);
-					}
-				});
-			}
-		});
+		SimplePanel qrCodePanel = new SimplePanel();
+		getVotingSessionPanel().add(qrCodePanel);
+		updateVoterImageQrLink();
+		qrCodePanel.add(getVoterQrCodeLink());
+		getVotingSessionPanel().add(getVotesChartPanel());
 
 		ChartLoader chartLoader = new ChartLoader(ChartPackage.CORECHART);
 		chartLoader.loadApi(new Runnable() {
 			@Override
 			public void run() {
-				// SimplePanel panel = new SimplePanel();
-				// panel.setHeight("200px");
-				// panel.setWidth("100%");
-				// panel.add(getVotesChart());
-				// RootPanel.get().add(panel);
-				getVotesChart();
+				GWT.log("Loaded " + ChartPackage.CORECHART);
+				getVotesChartPanel().setVisible(false);
+				getVotesChartPanel().add(getVotesChart());
 			}
 		});
 
-		// String votingSessionId =
-		// Window.Location.getParameter("votingSessionId");
-		// if (votingSessionId != null) {
-		// beginVotingSession(votingSessionId);
-		// }
-
 	}
+	private void evaluateVotes() {
+		GWT.log("Evaluating Votes for " + votingSessionId);
+		votingService.getVotes(votingSessionId,
+				new AsyncCallback<Map<String, Set<String>>>() {
 
-	private Panel getStartSessionPanel() {
-		if (startSessionPanel == null) {
-			startSessionPanel = new FlowPanel();
-		}
-		return startSessionPanel;
+					@Override
+					public void onFailure(Throwable caught) {
+						GWT.log("Could not get votes");
+					}
+
+					@Override
+					public void onSuccess(Map<String, Set<String>> result) {
+						GWT.log("Current votes: " + result);
+						Manager.this.votes = result;
+						updateVotesChart();
+					}
+				});
 	}
-
-	private Panel getVotingSessionPanel() {
-		if (votingSessionPanel == null) {
-			votingSessionPanel = new FlowPanel();
+	private Button getCloseVotingSessionButton() {
+		if (closeVotingSessionButton == null) {
+			closeVotingSessionButton = new Button();
+			closeVotingSessionButton.setText("End Voting Session");
 		}
-		return votingSessionPanel;
-	}
-
-	private Button getStartSessionButton() {
-		if (startSessionButton == null) {
-			startSessionButton = new Button();
-			startSessionButton.setText("Start Session");
-		}
-		return startSessionButton;
-	}
-
-	private Button getStartNewVotingRoundButton() {
-		if (startNewVotingRoundButton == null) {
-			startNewVotingRoundButton = new Button();
-			startNewVotingRoundButton.setText("Begin Voting Round");
-		}
-		return startNewVotingRoundButton;
+		return closeVotingSessionButton;
 	}
 
 	private Button getEndVotingRoundButton() {
@@ -141,15 +264,12 @@ public class Manager implements EntryPoint {
 		}
 		return endVotingRoundButton;
 	}
-
-	private Button getCloseVotingSessionButton() {
-		if (closeVotingSessionButton == null) {
-			closeVotingSessionButton = new Button();
-			closeVotingSessionButton.setText("End Voting Session");
+	private ToggleButton getRealTimeUpdateButton() {
+		if (realTimeUpdateButton == null) {
+			realTimeUpdateButton = new ToggleButton("Real-Time Update");
 		}
-		return closeVotingSessionButton;
+		return realTimeUpdateButton;
 	}
-
 	private TextBox getSessionNameTextBox() {
 		if (sessionNameTextBox == null) {
 			sessionNameTextBox = new TextBox();
@@ -157,71 +277,40 @@ public class Manager implements EntryPoint {
 		}
 		return sessionNameTextBox;
 	}
-
-	Timer evaluateVotesTimer = new Timer() {
-		@Override
-		public void run() {
-			GWT.log("Evaluating Votes for " + votingSessionId);
-			votingService.getVotes(votingSessionId,
-					new AsyncCallback<Map<String, Set<String>>>() {
-
-						@Override
-						public void onSuccess(Map<String, Set<String>> result) {
-							GWT.log("Current votes: " + result);
-							Manager.this.votes = result;
-							updateVotesChart();
-							evaluateVotesTimer.schedule(1000);
-						}
-
-						@Override
-						public void onFailure(Throwable caught) {
-							GWT.log("Could not get votes");
-							evaluateVotesTimer.schedule(1000);
-						}
-					});
+	private Button getStartNewVotingRoundButton() {
+		if (startNewVotingRoundButton == null) {
+			startNewVotingRoundButton = new Button();
+			startNewVotingRoundButton.setText("Begin Voting Round");
 		}
-	};
-
-	private void evaluateVotes() {
-		GWT.log("Evaluating Votes for " + votingSessionId);
-		votingService.getVotes(votingSessionId,
-				new AsyncCallback<Map<String, Set<String>>>() {
-
-					@Override
-					public void onSuccess(Map<String, Set<String>> result) {
-						GWT.log("Current votes: " + result);
-						Manager.this.votes = result;
-						updateVotesChart();
-					}
-
-					@Override
-					public void onFailure(Throwable caught) {
-						GWT.log("Could not get votes");
-					}
-				});
+		return startNewVotingRoundButton;
+	}
+	private Button getStartSessionButton() {
+		if (startSessionButton == null) {
+			startSessionButton = new Button();
+			startSessionButton.setText("Start Session");
+		}
+		return startSessionButton;
 	}
 
-	private ColumnChart votesChart;
-	protected String[] options;
-	private ColumnChartOptions voteChartOptions;
-	private ToggleButton realTimeUpdateButton;
-	private Anchor voterImageQrLink;
-
-	private SimplePanel votesChartPanel;
-
-	private SimplePanel getVotesChartPanel() {
-		if (votesChartPanel == null) {
-			votesChartPanel = new SimplePanel();
-			votesChartPanel.setHeight("200px");
-			votesChartPanel.setWidth("100%");
-			votesChartPanel.add(getVotesChart());
+	private Panel getStartSessionPanel() {
+		if (startSessionPanel == null) {
+			startSessionPanel = new FlowPanel();
 		}
-		return votesChartPanel;
+		return startSessionPanel;
+	}
+
+	private Anchor getVoterQrCodeLink() {
+		if (voterImageQrLink == null) {
+			updateVoterImageQrLink();
+		}
+		return voterImageQrLink;
 	}
 
 	private ColumnChart getVotesChart() {
 		if (votesChart == null) {
 			votesChart = new ColumnChart();
+			votesChart.setWidth("100%");
+			votesChart.setHeight("100%");
 		}
 		return votesChart;
 	}
@@ -230,16 +319,83 @@ public class Manager implements EntryPoint {
 		if (voteChartOptions == null) {
 			VAxis vAxis = VAxis.create();
 			vAxis.setMinValue(0);
-			vAxis.setMaxValue(20);
+			vAxis.setMaxValue(1);
 			vAxis.setBaseline(0d);
 			voteChartOptions = ColumnChartOptions.create();
 			voteChartOptions.setVAxis(vAxis);
+			vAxis.setFormat("#%");
+			voteChartOptions.setLegend(Legend.create(LegendPosition.NONE));
 		}
 		return voteChartOptions;
 	}
-	
+
+	private SimplePanel getVotesChartPanel() {
+		if (votesChartPanel == null) {
+			votesChartPanel = new SimplePanel();
+			votesChartPanel.setHeight("350px");
+			votesChartPanel.setWidth("400px");
+		}
+		return votesChartPanel;
+	}
+
+	private Panel getVotingSessionPanel() {
+		if (votingSessionPanel == null) {
+			votingSessionPanel = new FlowPanel();
+		}
+		return votingSessionPanel;
+	}
+
+	/**
+	 * This is the entry point method.
+	 */
+	public void onModuleLoad() {
+
+		// RootPanel.get().add(new Label("Welcome to Easy Vote Manager"));
+		RootPanel.get().add(getStartSessionPanel());
+		getStartSessionPanel().add(getSessionNameTextBox());
+		getStartSessionPanel().add(getStartSessionButton());
+		getStartSessionButton().addClickHandler(startSessionClickHandler);
+
+		// String votingSessionId =
+		// Window.Location.getParameter("votingSessionId");
+		// if (votingSessionId != null) {
+		// beginVotingSession(votingSessionId);
+		// }
+
+		if (startVotingSession != null) {
+			getStartSessionPanel().setVisible(false);
+			votingService.createVotingSession(startVotingSession,
+					new AsyncCallback<String>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+							getStartSessionPanel().setVisible(true);
+						}
+
+						@Override
+						public void onSuccess(String votingSessionId) {
+							beginVotingSession(votingSessionId);
+						}
+					});
+		}
+
+	}
+
 	private void resetVotesChart() {
 		votes = null;
+	}
+
+	private void updateVoterImageQrLink() {
+		String voterUrl = GWT.getModuleBaseURL().replace(
+				GWT.getModuleName() + "/", "")
+				+ "voter.html?votingSessionId=" + votingSessionId;
+		Image image = new Image(GWT.getModuleBaseURL().replace(
+				GWT.getModuleName() + "/", "")
+				+ "qr/img.png?url=" + URL.encode(voterUrl));
+		image.setSize("400px", "400px");
+		voterImageQrLink = new Anchor("", voterUrl, "_blank");
+		voterImageQrLink.getElement().appendChild(image.getElement());
+
 	}
 
 	private void updateVotesChart() {
@@ -247,14 +403,17 @@ public class Manager implements EntryPoint {
 		DataTable votesData = DataTable.create();
 		GWT.log("Updating votes chart data");
 		votesData.addColumn(ColumnType.STRING, "Answer");
-		votesData.addColumn(ColumnType.NUMBER, "Count");
+		votesData.addColumn(ColumnType.NUMBER, "Percentage");
 		Map<String, Integer> answerCounts = new LinkedHashMap<String, Integer>();
 		if (options != null) {
 			for (String option : options) {
 				answerCounts.put(option, 0);
 			}
 		}
+		int votesCount = 0;
+		GWT.log("Votes: " + votes);
 		if (votes != null) {
+			votesCount = votes.keySet().size();
 			for (Set<String> vote : votes.values()) {
 				for (String option : vote) {
 					Integer count = answerCounts.get(option);
@@ -266,146 +425,15 @@ public class Manager implements EntryPoint {
 		}
 		GWT.log("Answers: " + answerCounts);
 		for (Entry<String, Integer> e : answerCounts.entrySet()) {
-			votesData.addRow(e.getKey(), e.getValue());
+			if (votesCount == 0) {
+				votesData.addRow(e.getKey(), 0);
+			} else {
+				votesData.addRow(e.getKey(),
+						(Double) ((double) e.getValue() / (double) votesCount));
+			}
 		}
 		getVotesChart().draw(votesData, getVotesChartOptions());
 
-	}
-
-	private void beginVotingSession(String votingSessionId) {
-		this.votingSessionId = votingSessionId;
-		RootPanel.get().add(getVotingSessionPanel());
-		getVotingSessionPanel().clear();
-		SimplePanel qrCodePanel = new SimplePanel();
-		getVotingSessionPanel().add(qrCodePanel);
-		updateVoterImageQrLink();
-		qrCodePanel.add(getVoterQrCodeLink());
-
-		getVotingSessionPanel().add(getVotesChartPanel());
-		getVotesChartPanel().setVisible(false);
-		// getVotingSessionPanel().add(getVotesChart());
-		// updateVotesChart();
-
-		getVotingSessionPanel().add(getStartNewVotingRoundButton());
-		getStartNewVotingRoundButton().setVisible(true);
-		getVotingSessionPanel().add(getEndVotingRoundButton());
-		getVotingSessionPanel().add(getRealTimeUpdateButton());
-		getRealTimeUpdateButton().setVisible(false);
-		getVotingSessionPanel().add(getCloseVotingSessionButton());
-		getEndVotingRoundButton().setVisible(false);
-		getVotingSessionPanel().setVisible(true);
-		getStartNewVotingRoundButton().addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				getStartNewVotingRoundButton().setVisible(false);
-				final String[] options = new String[] { "A", "B", "C" };
-				votingService.beginVotingRound(Manager.this.votingSessionId,
-						"New Voting Round", options, new AsyncCallback<Void>() {
-							@Override
-							public void onSuccess(Void result) {
-								Manager.this.options = options;
-								getVoterQrCodeLink().setVisible(false);
-								getVotesChartPanel().setVisible(true);
-								getVotingSessionPanel().setVisible(true);
-								resetVotesChart();
-								updateVotesChart();
-								getVotesChart().redraw();
-								getEndVotingRoundButton().setVisible(true);
-								getRealTimeUpdateButton().setVisible(true);
-								getCloseVotingSessionButton().setVisible(false);
-								if (getRealTimeUpdateButton().isDown()) {
-									evaluateVotesTimer.schedule(1000);
-								}
-							}
-
-							@Override
-							public void onFailure(Throwable caught) {
-								getStartNewVotingRoundButton().setVisible(true);
-								getRealTimeUpdateButton().setVisible(false);
-								evaluateVotesTimer.cancel();
-							}
-						});
-			}
-		});
-		getEndVotingRoundButton().addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				getEndVotingRoundButton().setVisible(false);
-				votingService.endVotingRound(Manager.this.votingSessionId,
-						new AsyncCallback<Void>() {
-							@Override
-							public void onSuccess(Void result) {
-								getStartNewVotingRoundButton().setVisible(true);
-								getRealTimeUpdateButton().setVisible(false);
-								getCloseVotingSessionButton().setVisible(true);
-								evaluateVotes();
-							}
-
-							@Override
-							public void onFailure(Throwable caught) {
-								getEndVotingRoundButton().setVisible(true);
-								getRealTimeUpdateButton().setVisible(true);
-								evaluateVotes();
-							}
-						});
-			}
-		});
-		getCloseVotingSessionButton().addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				evaluateVotesTimer.cancel();
-				getVotingSessionPanel().setVisible(false);
-				votingService.closeVotingSession(Manager.this.votingSessionId,
-						new AsyncCallback<Void>() {
-							@Override
-							public void onSuccess(Void result) {
-								getStartSessionPanel().setVisible(true);
-							}
-
-							@Override
-							public void onFailure(Throwable caught) {
-								getVotingSessionPanel().setVisible(false);
-							}
-						});
-			}
-		});
-		getRealTimeUpdateButton().addClickHandler(new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				if (((ToggleButton) event.getSource()).isDown()) {
-					evaluateVotesTimer.schedule(1000);
-				} else {
-					evaluateVotesTimer.cancel();
-				}
-			}
-		});
-	}
-
-	private Anchor getVoterQrCodeLink() {
-		if (voterImageQrLink == null) {
-			updateVoterImageQrLink();
-		}
-		return voterImageQrLink;
-	}
-
-	private void updateVoterImageQrLink() {
-		String voterUrl = GWT.getModuleBaseURL().replace(
-				GWT.getModuleName() + "/", "")
-				+ "voter.html?votingSessionId=" + votingSessionId;
-		Image image = new Image(GWT.getModuleBaseURL().replace(
-				GWT.getModuleName() + "/", "")
-				+ "qr/img.png?url=" + URL.encode(voterUrl));
-		voterImageQrLink = new Anchor("", voterUrl, "_blank");
-		voterImageQrLink.getElement().appendChild(image.getElement());
-
-	}
-
-	private ToggleButton getRealTimeUpdateButton() {
-		if (realTimeUpdateButton == null) {
-			realTimeUpdateButton = new ToggleButton("Real-Time Update");
-		}
-		return realTimeUpdateButton;
 	}
 
 }
