@@ -44,7 +44,7 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public String createVotingSession(String name) {
 		VotingSession session = new VotingSession(name);
-		votingSessions.put(session.getId(), session);
+		while (session != votingSessions.putIfAbsent(session.getId(), session));
 		return session.getId();
 	}
 

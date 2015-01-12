@@ -33,9 +33,19 @@ public class VotingSession implements Serializable {
 	public Set<String> getOptions() {
 		return options;
 	}
-
+	
+	private static String generatePin(int length) {
+		final char[] alphabet = "0123456789".toCharArray();
+		StringBuilder b = new StringBuilder(length);
+		for (int i = 0; i < length; i++) {
+			b.append(alphabet[(int) (Math.random() * alphabet.length)]);
+		}
+		return b.toString();
+	}
+	
 	public VotingSession(String name) {
-		this.id = UuidUtil.getCompressedUuid(true);
+//		this.id = UuidUtil.getCompressedUuid(true);
+		this.id = generatePin(6);
 		this.name = name;
 		this.votes = new ConcurrentHashMap<String, Set<String>>();
 		this.voters = new ConcurrentSkipListSet<String>();
