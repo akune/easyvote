@@ -22,8 +22,8 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 		VotingService {
 
 	private static final String SERVLET_CONTEXT_DATA_KEY = "de.kune.easyvote.data";
+	private static final long TIMEOUT_IN_MILLIS = 10 * 1000;
 	private Map<String, VotingSession> votingSessions;
-
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -44,13 +44,17 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public String createVotingSession(String name) {
 		VotingSession session = new VotingSession(name);
-		while (session != votingSessions.putIfAbsent(session.getId(), session));
+		while (session != votingSessions.putIfAbsent(session.getId(), session))
+			;
 		return session.getId();
 	}
 
 	private VotingSession getVotingSession(String votingSessionId) {
 		VotingSession result = votingSessions.get(votingSessionId);
-		if (result == null) {
+		if (result == null
+				|| result.getActivityTimestamp() < System.currentTimeMillis()
+						- TIMEOUT_IN_MILLIS) {
+			votingSessions.remove(votingSessionId);
 			throw new IllegalArgumentException("No such voting session");
 		}
 		return result;
@@ -95,7 +99,7 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 				votingSessionId).getOptions()
 				: Collections.<String> emptySet();
 	}
-	
+
 	@Override
 	public Set<String> getVoters(String votingSessionId) {
 		return getVotingSession(votingSessionId).getVoters();
