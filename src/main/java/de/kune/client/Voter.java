@@ -54,25 +54,28 @@ public class Voter implements EntryPoint {
 		votingService.join(votingSessionId, new AsyncCallback<String>() {
 			@Override
 			public void onSuccess(String result) {
-				RootPanel.get().clear();
+				mainPanel().clear();
 				voterId = result;
 				Voter.this.votingSessionId = votingSessionId;
-				RootPanel.get().add(
+				mainPanel().add(
 						new Label("Welcome to Easy Vote, your ID is "
 								+ voterId));
-				RootPanel.get().add(getVotingSessionPanel());
-				RootPanel.get().add(getWaitingForVotingRoundPanel());
+				mainPanel().add(getVotingSessionPanel());
+				mainPanel().add(getWaitingForVotingRoundPanel());
 				update();
 			}
 
 			@Override
 			public void onFailure(Throwable caught) {
-				RootPanel
-						.get()
+				mainPanel()
 						.add(new Label(
 								"There is no such session"));
 			}
 		});
+	}
+
+	protected Panel mainPanel() {
+		return RootPanel.get("voting-client");
 	}
 
 	/**
@@ -81,7 +84,7 @@ public class Voter implements EntryPoint {
 	public void onModuleLoad() {
 		if (votingSessionId == null) {
 			FlowPanel pinPanel = new FlowPanel();
-			RootPanel.get().add(pinPanel);
+			mainPanel().add(pinPanel);
 			pinPanel.add(new Label("Please enter the session pin: "));
 			final TextBox pinTextBox = new TextBox();
 			pinPanel.add(pinTextBox);
@@ -164,7 +167,7 @@ public class Voter implements EntryPoint {
 	private void addVotingOptionButton() {
 		ToggleButton button = new ToggleButton();
 		button.addClickHandler(votingOptionButtonClickHandler);
-		RootPanel.get().add(button);
+		mainPanel().add(button);
 		getVotingOptionButtons().add(button);
 	}
 
@@ -173,7 +176,7 @@ public class Voter implements EntryPoint {
 			ToggleButton button = getVotingOptionButtons().get(
 					getVotingOptionButtons().size() - 1);
 			getVotingOptionButtons().remove(button);
-			RootPanel.get().remove(button);
+			mainPanel().remove(button);
 		}
 	}
 
