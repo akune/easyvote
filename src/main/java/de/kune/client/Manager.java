@@ -23,7 +23,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
-import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.gwt.charts.client.ChartLoader;
 import com.googlecode.gwt.charts.client.ChartPackage;
 import com.googlecode.gwt.charts.client.ColumnType;
@@ -198,7 +197,7 @@ public class Manager implements EntryPoint {
 	
 	private void beginVotingSession(String votingSessionId) {
 		this.votingSessionId = votingSessionId;
-		RootPanel.get().add(getVotingSessionPanel());
+		mainPanel().add(getVotingSessionPanel());
 		getVotingSessionPanel().clear();
 		
 		getButtonsPanel().add(getStartNewVotingRoundButton());
@@ -238,6 +237,10 @@ public class Manager implements EntryPoint {
 		});
 
 	}
+	private Panel mainPanel() {
+		return RootPanel.get("voting-manager");
+	}
+
 	private void evaluateVotes() {
 		GWT.log("Evaluating Votes for " + votingSessionId);
 		votingService.getVotes(votingSessionId,
@@ -357,17 +360,10 @@ public class Manager implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 
-		// RootPanel.get().add(new Label("Welcome to Easy Vote Manager"));
-		RootPanel.get().add(getStartSessionPanel());
+		mainPanel().add(getStartSessionPanel());
 		getStartSessionPanel().add(getSessionNameTextBox());
 		getStartSessionPanel().add(getStartSessionButton());
 		getStartSessionButton().addClickHandler(startSessionClickHandler);
-
-		// String votingSessionId =
-		// Window.Location.getParameter("votingSessionId");
-		// if (votingSessionId != null) {
-		// beginVotingSession(votingSessionId);
-		// }
 
 		if (startVotingSession != null) {
 			getStartSessionPanel().setVisible(false);
