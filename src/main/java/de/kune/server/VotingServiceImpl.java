@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -23,14 +24,14 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 
 	private static final String SERVLET_CONTEXT_DATA_KEY = "de.kune.easyvote.data";
 	private static final long TIMEOUT_IN_MILLIS = 30 * 60 * 1000;
-	private Map<String, VotingSession> votingSessions;
+	private ConcurrentMap<String, VotingSession> votingSessions;
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		synchronized (getServletContext()) {
-			votingSessions = (Map<String, VotingSession>) getServletContext()
+			votingSessions = (ConcurrentMap<String, VotingSession>) getServletContext()
 					.getAttribute(SERVLET_CONTEXT_DATA_KEY);
 			if (votingSessions == null) {
 				getServletContext()
