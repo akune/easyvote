@@ -30,5 +30,7 @@ public interface VotingService extends RemoteService {
 	String join(String votingSessionId);
 
 	Set<String> getVoters(String votingSessionId);
+	
+	void leave(String votingSessionId, String voterId);
 
 }

@@ -9,8 +9,12 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -54,11 +58,39 @@ public class Voter implements EntryPoint {
 		votingService.join(votingSessionId, new AsyncCallback<String>() {
 			@Override
 			public void onSuccess(String result) {
+				Window.addWindowClosingHandler(new ClosingHandler() {
+					@Override
+					public void onWindowClosing(ClosingEvent event) {
+						event.setMessage("Are you sure?");
+					}
+				});
+				Window.addCloseHandler(new CloseHandler<Window>() {
+					@Override
+					public void onClose(CloseEvent<Window> event) {
+						GWT.log("Sending leave message for " + voterId
+								+ " to session " + votingSessionId + ".");
+						votingService.leave(votingSessionId, voterId,
+								new AsyncCallback<Void>() {
+									@Override
+									public void onSuccess(Void result) {
+										GWT.log("Left session "
+												+ votingSessionId);
+									}
+
+									@Override
+									public void onFailure(Throwable caught) {
+										GWT.log("Could not leave.");
+									}
+								});
+
+					}
+				});
+
 				mainPanel().clear();
 				voterId = result;
 				Voter.this.votingSessionId = votingSessionId;
-				mainPanel().add(
-						new Label("Welcome to Easy Vote, your ID is "
+				mainPanel()
+						.add(new Label("Welcome to Easy Vote, your ID is "
 								+ voterId));
 				mainPanel().add(getVotingSessionPanel());
 				mainPanel().add(getWaitingForVotingRoundPanel());
@@ -67,9 +99,7 @@ public class Voter implements EntryPoint {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				mainPanel()
-						.add(new Label(
-								"There is no such session"));
+				mainPanel().add(new Label("There is no such session"));
 			}
 		});
 	}

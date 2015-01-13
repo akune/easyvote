@@ -41,11 +41,11 @@ public class Manager implements EntryPoint {
 	public static native void closeWindow() /*-{
 		$wnd.close();
 	}-*/;
-	
+
 	private Button closeVotingSessionButton;
 	private Button endVotingRoundButton;
 	private ToggleButton realTimeUpdateButton;
-	private final ClickHandler closeVotingSessiongHandler=new ClickHandler() {
+	private final ClickHandler closeVotingSessiongHandler = new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			evaluateVotesTimer.cancel();
@@ -88,6 +88,73 @@ public class Manager implements EntryPoint {
 					});
 		}
 	};
+	private final Timer evaluateParticipantsTimer = new Timer() {
+		@Override
+		public void run() {
+			GWT.log("Evaluating participants for " + votingSessionId);
+			votingService.getVoters(votingSessionId,
+					new AsyncCallback<Set<String>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							GWT.log("Could not get voters");
+							evaluateParticipantsTimer.schedule(1000);
+						}
+
+						@Override
+						public void onSuccess(Set<String> result) {
+							GWT.log("Current voters: " + result);
+							updateParticipants(result);
+							votingService
+									.getVotes(
+											votingSessionId,
+											new AsyncCallback<Map<String, Set<String>>>() {
+												@Override
+												public void onFailure(
+														Throwable caught) {
+													GWT.log("Could not get votes");
+													evaluateParticipantsTimer
+															.schedule(1000);
+												}
+
+												@Override
+												public void onSuccess(
+														Map<String, Set<String>> result) {
+													updateVotes(result);
+													updateParticipantsPanel();
+													evaluateParticipantsTimer.schedule(1000);
+												}
+											});
+						}
+					});
+		}
+	};
+	private FlowPanel participantsPanel;
+
+	private void updateParticipantsPanel() {
+		Label participantsLabel = getParticipantsLabel();
+		participantsLabel.setText(votes.size() + " vote(s) from " + participants.size() + " participant(s)");
+		//TODO: implement on...
+	}
+
+	private Label getParticipantsLabel() {
+		FlowPanel panel = getParticipantsPanel();
+		if (panel.getWidgetCount() == 0) {
+			panel.add(new Label());
+		}
+		return (Label) panel.getWidget(0);
+	}
+
+	private FlowPanel getParticipantsPanel() {
+		if (participantsPanel == null) {
+			participantsPanel = new FlowPanel();
+		}
+		return participantsPanel;
+	}
+
+	private void updateVotes(Map<String, Set<String>> result) {
+		Manager.this.votes = result;
+	}
+
 	private final Timer evaluateVotesTimer = new Timer() {
 		@Override
 		public void run() {
@@ -104,7 +171,7 @@ public class Manager implements EntryPoint {
 						@Override
 						public void onSuccess(Map<String, Set<String>> result) {
 							GWT.log("Current votes: " + result);
-							Manager.this.votes = result;
+							updateVotes(result);
 							updateVotesChart();
 							evaluateVotesTimer.schedule(1000);
 						}
@@ -128,7 +195,7 @@ public class Manager implements EntryPoint {
 						@Override
 						public void onSuccess(Void result) {
 							Manager.this.options = options;
-//							getVoterQrCodeLink().setVisible(false);
+							// getVoterQrCodeLink().setVisible(false);
 							getVotesChartPanel().setVisible(true);
 							getVotingSessionPanel().setVisible(true);
 							resetVotesChart();
@@ -187,32 +254,39 @@ public class Manager implements EntryPoint {
 	private String votingSessionId;
 	private FlowPanel votingSessionPanel;
 	private FlowPanel buttonsPanel;
-	
+	private Set<String> participants;
+
 	private FlowPanel getButtonsPanel() {
 		if (buttonsPanel == null) {
 			buttonsPanel = new FlowPanel();
 		}
 		return buttonsPanel;
 	}
-	
+
+	private void updateParticipants(Set<String> result) {
+		this.participants = result;
+	}
+
 	private void beginVotingSession(String votingSessionId) {
 		this.votingSessionId = votingSessionId;
 		mainPanel().add(getVotingSessionPanel());
 		getVotingSessionPanel().clear();
-		
+
 		getButtonsPanel().add(getStartNewVotingRoundButton());
 		getButtonsPanel().add(getEndVotingRoundButton());
 		getButtonsPanel().add(getRealTimeUpdateButton());
 		getButtonsPanel().add(getCloseVotingSessionButton());
 		getVotingSessionPanel().add(getButtonsPanel());
-		
+
 		getStartNewVotingRoundButton().setVisible(true);
 		getRealTimeUpdateButton().setVisible(false);
 		getEndVotingRoundButton().setVisible(false);
 		getVotingSessionPanel().setVisible(true);
-		getStartNewVotingRoundButton().addClickHandler(newVotingRoundClickHandler);
+		getStartNewVotingRoundButton().addClickHandler(
+				newVotingRoundClickHandler);
 		getEndVotingRoundButton().addClickHandler(endVotingRoundClickHandler);
-		getCloseVotingSessionButton().addClickHandler(closeVotingSessiongHandler);
+		getCloseVotingSessionButton().addClickHandler(
+				closeVotingSessiongHandler);
 		getRealTimeUpdateButton().addClickHandler(realTimeUpdateClickHandler);
 
 		SimplePanel pinCodePanel = new SimplePanel();
@@ -220,12 +294,12 @@ public class Manager implements EntryPoint {
 		getVotingSessionPanel().add(pinCodePanel);
 		pinCodePanel.add(new Label(votingSessionId));
 
-		SimplePanel qrCodePanel = new SimplePanel();
-		getVotingSessionPanel().add(qrCodePanel);
-		updateVoterImageQrLink();
-		qrCodePanel.add(getVoterQrCodeLink());
+		// SimplePanel qrCodePanel = new SimplePanel();
+		// getVotingSessionPanel().add(qrCodePanel);
+		// updateVoterImageQrLink();
+		// qrCodePanel.add(getVoterQrCodeLink());
+
 		getVotingSessionPanel().add(getVotesChartPanel());
-		
 		ChartLoader chartLoader = new ChartLoader(ChartPackage.CORECHART);
 		chartLoader.loadApi(new Runnable() {
 			@Override
@@ -235,8 +309,12 @@ public class Manager implements EntryPoint {
 				getVotesChartPanel().add(getVotesChart());
 			}
 		});
+		
+		mainPanel().add(getParticipantsPanel());
+		evaluateParticipantsTimer.schedule(1000);
 
 	}
+
 	private Panel mainPanel() {
 		return RootPanel.get("voting-manager");
 	}
@@ -259,6 +337,7 @@ public class Manager implements EntryPoint {
 					}
 				});
 	}
+
 	private Button getCloseVotingSessionButton() {
 		if (closeVotingSessionButton == null) {
 			closeVotingSessionButton = new Button();
@@ -274,12 +353,14 @@ public class Manager implements EntryPoint {
 		}
 		return endVotingRoundButton;
 	}
+
 	private ToggleButton getRealTimeUpdateButton() {
 		if (realTimeUpdateButton == null) {
 			realTimeUpdateButton = new ToggleButton("Real-Time Update");
 		}
 		return realTimeUpdateButton;
 	}
+
 	private TextBox getSessionNameTextBox() {
 		if (sessionNameTextBox == null) {
 			sessionNameTextBox = new TextBox();
@@ -287,6 +368,7 @@ public class Manager implements EntryPoint {
 		}
 		return sessionNameTextBox;
 	}
+
 	private Button getStartNewVotingRoundButton() {
 		if (startNewVotingRoundButton == null) {
 			startNewVotingRoundButton = new Button();
@@ -294,6 +376,7 @@ public class Manager implements EntryPoint {
 		}
 		return startNewVotingRoundButton;
 	}
+
 	private Button getStartSessionButton() {
 		if (startSessionButton == null) {
 			startSessionButton = new Button();

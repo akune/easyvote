@@ -120,4 +120,10 @@ public class VotingSession implements Serializable {
 		return activityTimestamp;
 	}
 
+	public void removeVoter(String voterId) {
+		updateActivityTimestamp();
+		votes.remove(voterId);
+		voters.remove(voterId);
+	}
+
 }

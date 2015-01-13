@@ -113,4 +113,10 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 		return voterId;
 	}
 
+	@Override
+	public void leave(String votingSessionId, String voterId) {
+		System.out.println(voterId + " is leaving " + votingSessionId);
+		getVotingSession(votingSessionId).removeVoter(voterId);
+	}
+
 }
