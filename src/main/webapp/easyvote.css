@@ -15,6 +15,10 @@ div {
 	margin: auto;
 }
 
+div.pinCodePanel {
+	font-size: 14pt; position: relative; top: 20px; height: 0px
+}
+
 .sendButton {
   display: block;
   font-size: 16pt;

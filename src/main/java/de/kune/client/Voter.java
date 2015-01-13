@@ -12,10 +12,12 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
 
 /**
@@ -32,8 +34,8 @@ public class Voter implements EntryPoint {
 
 	private FlowPanel votingSessionPanel;
 
-	String voterId;
-	final String votingSessionId = Window.Location
+	private String voterId;
+	private String votingSessionId = Window.Location
 			.getParameter("votingSessionId");
 
 	private List<ToggleButton> votingOptionButtons;
@@ -48,16 +50,15 @@ public class Voter implements EntryPoint {
 
 	// private final Messages messages = GWT.create(Messages.class);
 
-	/**
-	 * This is the entry point method.
-	 */
-	public void onModuleLoad() {
+	private void joinSession(final String votingSessionId) {
 		votingService.join(votingSessionId, new AsyncCallback<String>() {
 			@Override
 			public void onSuccess(String result) {
+				RootPanel.get().clear();
 				voterId = result;
-				RootPanel.get()
-						.add(new Label("Welcome to Easy Vote, your ID is "
+				Voter.this.votingSessionId = votingSessionId;
+				RootPanel.get().add(
+						new Label("Welcome to Easy Vote, your ID is "
 								+ voterId));
 				RootPanel.get().add(getVotingSessionPanel());
 				RootPanel.get().add(getWaitingForVotingRoundPanel());
@@ -69,9 +70,32 @@ public class Voter implements EntryPoint {
 				RootPanel
 						.get()
 						.add(new Label(
-								"Welcome to Easy Vote - There is no such session"));
+								"There is no such session"));
 			}
 		});
+	}
+
+	/**
+	 * This is the entry point method.
+	 */
+	public void onModuleLoad() {
+		if (votingSessionId == null) {
+			FlowPanel pinPanel = new FlowPanel();
+			RootPanel.get().add(pinPanel);
+			pinPanel.add(new Label("Please enter the session pin: "));
+			final TextBox pinTextBox = new TextBox();
+			pinPanel.add(pinTextBox);
+			Button joinButton = new Button("Join");
+			pinPanel.add(joinButton);
+			joinButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					joinSession(pinTextBox.getText().trim());
+				}
+			});
+		} else {
+			joinSession(votingSessionId);
+		}
 	}
 
 	private Timer voteTimer = new Timer() {

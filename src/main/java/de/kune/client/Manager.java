@@ -17,11 +17,13 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
+import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.gwt.charts.client.ChartLoader;
 import com.googlecode.gwt.charts.client.ChartPackage;
 import com.googlecode.gwt.charts.client.ColumnType;
@@ -214,12 +216,17 @@ public class Manager implements EntryPoint {
 		getCloseVotingSessionButton().addClickHandler(closeVotingSessiongHandler);
 		getRealTimeUpdateButton().addClickHandler(realTimeUpdateClickHandler);
 
+		SimplePanel pinCodePanel = new SimplePanel();
+		pinCodePanel.setStyleName("pinCodePanel");
+		getVotingSessionPanel().add(pinCodePanel);
+		pinCodePanel.add(new Label("Pin: " + votingSessionId));
+
 		SimplePanel qrCodePanel = new SimplePanel();
 		getVotingSessionPanel().add(qrCodePanel);
 		updateVoterImageQrLink();
 		qrCodePanel.add(getVoterQrCodeLink());
 		getVotingSessionPanel().add(getVotesChartPanel());
-
+		
 		ChartLoader chartLoader = new ChartLoader(ChartPackage.CORECHART);
 		chartLoader.loadApi(new Runnable() {
 			@Override
