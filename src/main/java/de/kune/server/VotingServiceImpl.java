@@ -22,7 +22,7 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 		VotingService {
 
 	private static final String SERVLET_CONTEXT_DATA_KEY = "de.kune.easyvote.data";
-	private static final long TIMEOUT_IN_MILLIS = 10 * 1000;
+	private static final long TIMEOUT_IN_MILLIS = 30 * 60 * 1000;
 	private Map<String, VotingSession> votingSessions;
 
 	@Override
