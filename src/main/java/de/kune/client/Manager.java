@@ -395,7 +395,7 @@ public class Manager implements EntryPoint {
 	private void updateVoterImageQrLink() {
 		String voterUrl = GWT.getModuleBaseURL().replace(
 				GWT.getModuleName() + "/", "")
-				+ "voter.html?votingSessionId=" + votingSessionId;
+				+ "?votingSessionId=" + votingSessionId;
 		Image image = new Image(GWT.getModuleBaseURL().replace(
 				GWT.getModuleName() + "/", "")
 				+ "qr/img.png?url=" + URL.encode(voterUrl));
