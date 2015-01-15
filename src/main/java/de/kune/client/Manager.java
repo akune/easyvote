@@ -132,8 +132,7 @@ public class Manager implements EntryPoint {
 
 	private void updateParticipantsPanel() {
 		Label participantsLabel = getParticipantsLabel();
-		participantsLabel.setText(votes.size() + " vote(s) from " + participants.size() + " participant(s)");
-		//TODO: implement on...
+		participantsLabel.setText(votes.size() + " vote(s)");// from " + participants.size() + " participant(s)");
 	}
 
 	private Label getParticipantsLabel() {
