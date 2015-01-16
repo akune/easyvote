@@ -447,7 +447,7 @@ public class Manager implements EntryPoint {
 		getStartSessionPanel().add(getStartSessionButton());
 		getStartSessionButton().addClickHandler(startSessionClickHandler);
 
-		if (startVotingSession != null) {
+		if (startVotingSession != null || mainPanel().getElement().hasAttribute("start-session")) {
 			getStartSessionPanel().setVisible(false);
 			votingService.createVotingSession(startVotingSession,
 					new AsyncCallback<String>() {
