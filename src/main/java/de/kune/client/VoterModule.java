@@ -41,25 +41,6 @@ public class VoterModule implements EntryPoint {
 				new Voter(RootPanel.get(id), messages);
 			}
 		}
-		// List<Element> element = ;
-		// if (votingSessionId == null) {
-		// FlowPanel pinPanel = new FlowPanel();
-		// mainPanel().add(pinPanel);
-		// pinPanel.add(new Label(messages.enterPin()));
-		// final TextBox pinTextBox = new TextBox();
-		// pinPanel.add(pinTextBox);
-		// Button joinButton = new Button(messages.joinButton());
-		// pinPanel.add(joinButton);
-		// joinButton.addClickHandler(new ClickHandler() {
-		// @Override
-		// public void onClick(ClickEvent event) {
-		// joinSession(pinTextBox.getText().trim());
-		// }
-		// });
-		// } else {
-		// joinSession(votingSessionId);
-		// }
-//		new Voter(mainPanel(), messages);
 	}
 
 }

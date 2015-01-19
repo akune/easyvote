@@ -121,7 +121,8 @@ public class Manager implements EntryPoint {
 														Map<String, Set<String>> result) {
 													updateVotes(result);
 													updateParticipantsPanel();
-													evaluateParticipantsTimer.schedule(1000);
+													evaluateParticipantsTimer
+															.schedule(1000);
 												}
 											});
 						}
@@ -132,7 +133,9 @@ public class Manager implements EntryPoint {
 
 	private void updateParticipantsPanel() {
 		Label participantsLabel = getParticipantsLabel();
-		participantsLabel.setText(votes.size() + " vote(s)");// from " + participants.size() + " participant(s)");
+		participantsLabel.setText(votes.size() + " vote(s)");// from
+																// " + participants.size() + "
+																// participant(s)");
 	}
 
 	private Label getParticipantsLabel() {
@@ -180,34 +183,7 @@ public class Manager implements EntryPoint {
 	private final ClickHandler newVotingRoundClickHandler = new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
-			getStartNewVotingRoundButton().setVisible(false);
-			final String[] options = new String[] { "A", "B", "C" };
-			votingService.beginVotingRound(Manager.this.votingSessionId,
-					"New Voting Round", options, new AsyncCallback<Void>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							getStartNewVotingRoundButton().setVisible(true);
-							getRealTimeUpdateButton().setVisible(false);
-							evaluateVotesTimer.cancel();
-						}
-
-						@Override
-						public void onSuccess(Void result) {
-							Manager.this.options = options;
-							// getVoterQrCodeLink().setVisible(false);
-							getVotesChartPanel().setVisible(true);
-							getVotingSessionPanel().setVisible(true);
-							resetVotesChart();
-							updateVotesChart();
-							getVotesChart().redraw();
-							getEndVotingRoundButton().setVisible(true);
-							getRealTimeUpdateButton().setVisible(true);
-							getCloseVotingSessionButton().setVisible(false);
-							if (getRealTimeUpdateButton().isDown()) {
-								evaluateVotesTimer.schedule(1000);
-							}
-						}
-					});
+			beginVotingRound();
 		}
 	};
 	private final ClickHandler realTimeUpdateClickHandler = new ClickHandler() {
@@ -258,8 +234,42 @@ public class Manager implements EntryPoint {
 	private FlowPanel getButtonsPanel() {
 		if (buttonsPanel == null) {
 			buttonsPanel = new FlowPanel();
+			buttonsPanel.setStyleName("buttonsPanel");
 		}
 		return buttonsPanel;
+	}
+
+	protected void beginVotingRound() {
+		getStartNewVotingRoundButton().setVisible(false);
+		final String[] options = new String[] { "A", "B", "C" };
+		votingService.beginVotingRound(Manager.this.votingSessionId,
+				"New Voting Round", options, new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						getStartNewVotingRoundButton().setVisible(true);
+						getRealTimeUpdateButton().setVisible(false);
+						evaluateVotesTimer.cancel();
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						Manager.this.options = options;
+						// getVoterQrCodeLink().setVisible(false);
+						getVotesChartPanel().setVisible(true);
+						getVotingSessionPanel().setVisible(true);
+						resetVotesChart();
+						updateVotesChart();
+						getVotesChart().redraw();
+						getEndVotingRoundButton().setVisible(true);
+						getRealTimeUpdateButton().setVisible(true);
+						getCloseVotingSessionButton().setVisible(false);
+						if (getRealTimeUpdateButton().isDown()
+								|| mainPanel().getElement().hasAttribute(
+										"real-time-update")) {
+							evaluateVotesTimer.schedule(1000);
+						}
+					}
+				});
 	}
 
 	private void updateParticipants(Set<String> result) {
@@ -306,9 +316,13 @@ public class Manager implements EntryPoint {
 				GWT.log("Loaded " + ChartPackage.CORECHART);
 				getVotesChartPanel().setVisible(false);
 				getVotesChartPanel().add(getVotesChart());
+
+				if (mainPanel().getElement().hasAttribute("auto-round")) {
+					beginVotingRound();
+				}
 			}
 		});
-		
+
 		mainPanel().add(getParticipantsPanel());
 		evaluateParticipantsTimer.schedule(1000);
 
@@ -447,7 +461,8 @@ public class Manager implements EntryPoint {
 		getStartSessionPanel().add(getStartSessionButton());
 		getStartSessionButton().addClickHandler(startSessionClickHandler);
 
-		if (startVotingSession != null || mainPanel().getElement().hasAttribute("start-session")) {
+		if (startVotingSession != null
+				|| mainPanel().getElement().hasAttribute("start-session")) {
 			getStartSessionPanel().setVisible(false);
 			votingService.createVotingSession(startVotingSession,
 					new AsyncCallback<String>() {
