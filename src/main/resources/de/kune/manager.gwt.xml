@@ -12,6 +12,7 @@
 
   <!-- Other module inherits                                      -->
   <inherits name="com.googlecode.gwt.charts.Charts"/> 
+  <inherits name='de.novanic.eventservice.GWTEventService' />
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='de.kune.client.Manager' />

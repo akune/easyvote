@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -20,14 +19,10 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
 
-/**
- * Entry point classes define <code>onModuleLoad()</code>.
- */
-public class Voter implements EntryPoint {
+public class Voter {
 
 	/**
 	 * Create a remote service proxy to talk to the server-side Greeting
@@ -52,7 +47,9 @@ public class Voter implements EntryPoint {
 		}
 	};
 
-	// private final Messages messages = GWT.create(Messages.class);
+	private final Panel mainPanel;
+
+	private final Messages messages;
 
 	private void joinSession(final String votingSessionId) {
 		votingService.join(votingSessionId, new AsyncCallback<String>() {
@@ -89,9 +86,9 @@ public class Voter implements EntryPoint {
 				mainPanel().clear();
 				voterId = result;
 				Voter.this.votingSessionId = votingSessionId;
-				mainPanel()
-						.add(new Label("Welcome to Easy Vote, your ID is "
-								+ voterId));
+				// mainPanel()
+				// .add(new Label("Welcome to Easy Vote, your ID is "
+				// + voterId));
 				mainPanel().add(getVotingSessionPanel());
 				mainPanel().add(getWaitingForVotingRoundPanel());
 				update();
@@ -99,26 +96,25 @@ public class Voter implements EntryPoint {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				mainPanel().add(new Label("There is no such session"));
+				mainPanel().add(new Label(messages.noSuchSession()));
 			}
 		});
 	}
 
 	protected Panel mainPanel() {
-		return RootPanel.get("voting-client");
+		return mainPanel;
 	}
 
-	/**
-	 * This is the entry point method.
-	 */
-	public void onModuleLoad() {
+	public Voter(Panel mainPanel, Messages messages) {
+		this.mainPanel = mainPanel;
+		this.messages = messages;
 		if (votingSessionId == null) {
 			FlowPanel pinPanel = new FlowPanel();
 			mainPanel().add(pinPanel);
-			pinPanel.add(new Label("Please enter the session pin: "));
+			pinPanel.add(new Label(messages.enterPin()));
 			final TextBox pinTextBox = new TextBox();
 			pinPanel.add(pinTextBox);
-			Button joinButton = new Button("Join");
+			Button joinButton = new Button(messages.joinButton());
 			pinPanel.add(joinButton);
 			joinButton.addClickHandler(new ClickHandler() {
 				@Override
@@ -188,8 +184,8 @@ public class Voter implements EntryPoint {
 	private Panel getWaitingForVotingRoundPanel() {
 		if (waitingForVotingRoundPanel == null) {
 			waitingForVotingRoundPanel = new FlowPanel();
-			waitingForVotingRoundPanel.add(new Label(
-					"Waiting for voting round to begin..."));
+			waitingForVotingRoundPanel.add(new Label(messages
+					.waitingForVotingRound()));
 		}
 		return waitingForVotingRoundPanel;
 	}

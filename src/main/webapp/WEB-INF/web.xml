@@ -21,12 +21,16 @@
     <servlet-name>votingServlet</servlet-name>
     <servlet-class>de.kune.server.VotingServiceImpl</servlet-class>
   </servlet>
-  
-  <servlet>
-    <servlet-name>qrCodeServlet</servlet-name>
-    <servlet-class>de.kune.server.QrServlet</servlet-class>
-  </servlet>
 
+<!--   <servlet> -->
+<!--     <servlet-name>qrCodeServlet</servlet-name> -->
+<!--     <servlet-class>de.kune.server.QrServlet</servlet-class> -->
+<!--   </servlet> -->
+
+  <servlet>
+    <servlet-name>eventServiceImpl</servlet-name>
+    <servlet-class>de.novanic.eventservice.service.EventServiceImpl</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>votingServlet</servlet-name>
     <url-pattern>/manager/vote</url-pattern>
@@ -36,10 +40,20 @@
     <servlet-name>votingServlet</servlet-name>
     <url-pattern>/voter/vote</url-pattern>
   </servlet-mapping>
-  
+
+<!--   <servlet-mapping> -->
+<!--     <servlet-name>qrCodeServlet</servlet-name> -->
+<!--     <url-pattern>/qr/img.png</url-pattern> -->
+<!--   </servlet-mapping> -->
+
   <servlet-mapping>
-    <servlet-name>qrCodeServlet</servlet-name>
-    <url-pattern>/qr/img.png</url-pattern>
+    <servlet-name>eventServiceImpl</servlet-name>
+    <url-pattern>/manager/gwteventservice</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>eventServiceImpl</servlet-name>
+    <url-pattern>/voter/gwteventservice</url-pattern>
   </servlet-mapping>
 
   <!-- Default page to serve -->

@@ -1,10 +1,15 @@
 package de.kune.client;
 
+
+
 public interface Messages extends com.google.gwt.i18n.client.Messages {
   
-  @DefaultMessage("Enter your name")
-  String nameField();
+  String noSuchSession();
 
-  @DefaultMessage("Send")
-  String sendButton();
+  String enterPin();
+
+  String joinButton();
+
+  String waitingForVotingRound();
+  
 }

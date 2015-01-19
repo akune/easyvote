@@ -11,9 +11,10 @@
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 
   <!-- Other module inherits                                      -->
+  <inherits name='de.novanic.eventservice.GWTEventService' />
 
   <!-- Specify the app entry point class.                         -->
-  <entry-point class='de.kune.client.Voter' />
+  <entry-point class='de.kune.client.VoterModule' />
 
   <!-- Specify the paths for translatable code                    -->
   <source path='client' />
