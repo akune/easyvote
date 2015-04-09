@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Node;
 
 /**
  * 

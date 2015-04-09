@@ -1,5 +1,7 @@
 package de.kune.client;
 
+import static de.kune.client.VotingServiceAsync.Util.getInstance;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,12 +26,7 @@ import com.google.gwt.user.client.ui.ToggleButton;
 
 public class Voter {
 
-	/**
-	 * Create a remote service proxy to talk to the server-side Greeting
-	 * service.
-	 */
-	private final VotingServiceAsync votingService = GWT
-			.create(VotingService.class);
+	private final VotingServiceAsync votingService = getInstance();
 
 	private FlowPanel votingSessionPanel;
 

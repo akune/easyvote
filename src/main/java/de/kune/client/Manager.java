@@ -1,5 +1,7 @@
 package de.kune.client;
 
+import static de.kune.client.VotingServiceAsync.Util.getInstance;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,8 +41,8 @@ import com.googlecode.gwt.charts.client.options.VAxis;
 public class Manager implements EntryPoint {
 
 	public static native void closeWindow() /*-{
-		$wnd.close();
-	}-*/;
+											$wnd.close();
+											}-*/;
 
 	private Button closeVotingSessionButton;
 	private Button endVotingRoundButton;
@@ -219,12 +221,7 @@ public class Manager implements EntryPoint {
 	private ColumnChart votesChart;
 	private SimplePanel votesChartPanel;
 
-	/**
-	 * Create a remote service proxy to talk to the server-side Greeting
-	 * service.
-	 */
-	private final VotingServiceAsync votingService = GWT
-			.create(VotingService.class);
+	private final VotingServiceAsync votingService = getInstance();
 
 	private String votingSessionId;
 	private FlowPanel votingSessionPanel;
