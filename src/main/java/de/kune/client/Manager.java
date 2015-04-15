@@ -2,7 +2,9 @@ package de.kune.client;
 
 import static de.kune.client.VotingManagerServiceAsync.Util.getInstance;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,14 +19,18 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
+import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.googlecode.gwt.charts.client.ChartLoader;
 import com.googlecode.gwt.charts.client.ChartPackage;
 import com.googlecode.gwt.charts.client.ColumnType;
@@ -85,6 +91,7 @@ public class Manager implements EntryPoint {
 							getStartNewVotingRoundButton().setVisible(true);
 							getRealTimeUpdateButton().setVisible(false);
 							getCloseVotingSessionButton().setVisible(true);
+							getOptionsPanel().setVisible(true);
 							evaluateVotes();
 						}
 					});
@@ -208,7 +215,6 @@ public class Manager implements EntryPoint {
 					"right=20,top=20,width=400,height=800,toolbar=0,resizable=0");
 		}
 	};
-	private String[] options;
 	private TextBox sessionNameTextBox;
 	private Button startNewVotingRoundButton;
 	private Button startSessionButton;
@@ -228,6 +234,7 @@ public class Manager implements EntryPoint {
 	private FlowPanel votingSessionPanel;
 	private FlowPanel buttonsPanel;
 	private Set<String> participants;
+	private DisclosurePanel optionsPanel;
 
 	private FlowPanel getButtonsPanel() {
 		if (buttonsPanel == null) {
@@ -239,9 +246,11 @@ public class Manager implements EntryPoint {
 
 	protected void beginVotingRound() {
 		getStartNewVotingRoundButton().setVisible(false);
-		final String[] options = new String[] { "A", "B", "C" };
 		votingService.beginVotingRound(Manager.this.votingSessionId,
-				"New Voting Round", options, true, new AsyncCallback<Void>() {
+				"New Voting Round",
+				options.getOptions().toArray(new String[0]),
+				options.isMultipleSelectionAllowed(),
+				new AsyncCallback<Void>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						getStartNewVotingRoundButton().setVisible(true);
@@ -251,7 +260,6 @@ public class Manager implements EntryPoint {
 
 					@Override
 					public void onSuccess(Void result) {
-						Manager.this.options = options;
 						// getVoterQrCodeLink().setVisible(false);
 						getVotesChartPanel().setVisible(true);
 						getVotingSessionPanel().setVisible(true);
@@ -261,6 +269,7 @@ public class Manager implements EntryPoint {
 						getEndVotingRoundButton().setVisible(true);
 						getRealTimeUpdateButton().setVisible(true);
 						getCloseVotingSessionButton().setVisible(false);
+						getOptionsPanel().setVisible(false);
 						if (getRealTimeUpdateButton().isDown()
 								|| mainPanel().getElement().hasAttribute(
 										"real-time-update")) {
@@ -274,7 +283,8 @@ public class Manager implements EntryPoint {
 		this.participants = result;
 	}
 
-	private void beginVotingSession(String votingSessionId, String votingSessionPin) {
+	private void beginVotingSession(String votingSessionId,
+			String votingSessionPin) {
 		this.votingSessionId = votingSessionId;
 		this.votingSessionPin = votingSessionPin;
 		mainPanel().add(getVotingSessionPanel());
@@ -284,6 +294,8 @@ public class Manager implements EntryPoint {
 		getButtonsPanel().add(getEndVotingRoundButton());
 		getButtonsPanel().add(getRealTimeUpdateButton());
 		getButtonsPanel().add(getCloseVotingSessionButton());
+		getButtonsPanel().add(getOptionsPanel());
+
 		getVotingSessionPanel().add(getButtonsPanel());
 
 		getStartNewVotingRoundButton().setVisible(true);
@@ -325,6 +337,40 @@ public class Manager implements EntryPoint {
 		mainPanel().add(getParticipantsPanel());
 		evaluateParticipantsTimer.schedule(1000);
 
+	}
+
+	private Options options = new Options(new LinkedHashSet<String>(
+			Arrays.asList(new String[] { "A", "B", "C" })), true);
+
+	private Widget getOptionsPanel() {
+		if (optionsPanel == null) {
+			optionsPanel = new DisclosurePanel("Options: A, B, C");
+			getButtonsPanel().add(optionsPanel);
+			Panel sp = new VerticalPanel();
+			optionsPanel.add(sp);
+			RadioButton abcOptions = new RadioButton("options", "A, B, C");
+			abcOptions.setValue(true);
+			abcOptions.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					optionsPanel.getHeaderTextAccessor().setText("Options: A, B, C");
+					options = new Options(new LinkedHashSet<String>(
+							Arrays.asList(new String[] { "A", "B", "C" })), true);
+				}
+			});
+			sp.add(abcOptions);
+			RadioButton yesNoOptions = new RadioButton("options", "Yes / No");
+			sp.add(yesNoOptions);
+			yesNoOptions.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					optionsPanel.getHeaderTextAccessor().setText("Options: Yes / No");
+					options = new Options(new LinkedHashSet<String>(
+							Arrays.asList(new String[] { "Yes", "No" })), false);
+				}
+			});
+		}
+		return optionsPanel;
 	}
 
 	private Panel mainPanel() {
@@ -473,18 +519,22 @@ public class Manager implements EntryPoint {
 
 						@Override
 						public void onSuccess(final String votingSessionId) {
-							votingService.getSessionPin(votingSessionId, new AsyncCallback<String>() {
-								
-								@Override
-								public void onSuccess(String votingSessionPin) {
-									beginVotingSession(votingSessionId, votingSessionPin);
-								}
-								
-								@Override
-								public void onFailure(Throwable caught) {
-									getStartSessionPanel().setVisible(true);
-								}
-							});
+							votingService.getSessionPin(votingSessionId,
+									new AsyncCallback<String>() {
+
+										@Override
+										public void onSuccess(
+												String votingSessionPin) {
+											beginVotingSession(votingSessionId,
+													votingSessionPin);
+										}
+
+										@Override
+										public void onFailure(Throwable caught) {
+											getStartSessionPanel().setVisible(
+													true);
+										}
+									});
 						}
 					});
 		}
@@ -516,7 +566,7 @@ public class Manager implements EntryPoint {
 		votesData.addColumn(ColumnType.NUMBER, "Percentage");
 		Map<String, Integer> answerCounts = new LinkedHashMap<String, Integer>();
 		if (options != null) {
-			for (String option : options) {
+			for (String option : options.getOptions()) {
 				answerCounts.put(option, 0);
 			}
 		}
