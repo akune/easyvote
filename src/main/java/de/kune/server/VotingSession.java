@@ -1,5 +1,7 @@
 package de.kune.server;
 
+import static de.kune.server.UuidUtil.getCompressedUuid;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -8,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+
+import de.kune.client.Options;
 
 public class VotingSession implements Serializable {
 
@@ -23,6 +27,7 @@ public class VotingSession implements Serializable {
 	}
 
 	private final String id;
+	private String pin;
 	private final String name;
 	private final Map<String, Set<String>> votes;
 	private final Set<String> voters;
@@ -31,10 +36,11 @@ public class VotingSession implements Serializable {
 	private long activityTimestamp;
 
 	private String roundTitle;
+	private boolean multipleSelectionAllowed;
 
 	public VotingSession(String name) {
-		// this.id = UuidUtil.getCompressedUuid(true);
-		this.id = generatePin(6);
+		this.id = getCompressedUuid(true);
+		this.pin = generatePin(6);
 		this.name = name;
 		this.votes = new ConcurrentHashMap<String, Set<String>>();
 		this.voters = new ConcurrentSkipListSet<String>();
@@ -51,14 +57,18 @@ public class VotingSession implements Serializable {
 		return votingRoundOpen;
 	}
 
-	public Set<String> getOptions() {
+	public Options getOptions() {
 		updateActivityTimestamp();
-		return options;
+		return new Options(options, multipleSelectionAllowed);
 	}
 
 	public String getId() {
 		updateActivityTimestamp();
 		return id;
+	}
+
+	public String getPin() {
+		return pin;
 	}
 
 	public String getName() {
@@ -92,9 +102,10 @@ public class VotingSession implements Serializable {
 		votes.clear();
 	}
 
-	public void setOptions(Set<String> options) {
+	public void setOptions(Set<String> options, boolean multipleSelectionAllowed) {
 		updateActivityTimestamp();
 		this.options = new LinkedHashSet<String>(options);
+		this.multipleSelectionAllowed = multipleSelectionAllowed;
 	}
 
 	public void setVotingRoundOpen(boolean b) {

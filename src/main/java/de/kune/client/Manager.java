@@ -1,6 +1,6 @@
 package de.kune.client;
 
-import static de.kune.client.VotingServiceAsync.Util.getInstance;
+import static de.kune.client.VotingManagerServiceAsync.Util.getInstance;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -221,9 +221,10 @@ public class Manager implements EntryPoint {
 	private ColumnChart votesChart;
 	private SimplePanel votesChartPanel;
 
-	private final VotingServiceAsync votingService = getInstance();
+	private final VotingManagerServiceAsync votingService = getInstance();
 
 	private String votingSessionId;
+	private String votingSessionPin;
 	private FlowPanel votingSessionPanel;
 	private FlowPanel buttonsPanel;
 	private Set<String> participants;
@@ -240,7 +241,7 @@ public class Manager implements EntryPoint {
 		getStartNewVotingRoundButton().setVisible(false);
 		final String[] options = new String[] { "A", "B", "C" };
 		votingService.beginVotingRound(Manager.this.votingSessionId,
-				"New Voting Round", options, new AsyncCallback<Void>() {
+				"New Voting Round", options, true, new AsyncCallback<Void>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						getStartNewVotingRoundButton().setVisible(true);
@@ -273,8 +274,9 @@ public class Manager implements EntryPoint {
 		this.participants = result;
 	}
 
-	private void beginVotingSession(String votingSessionId) {
+	private void beginVotingSession(String votingSessionId, String votingSessionPin) {
 		this.votingSessionId = votingSessionId;
+		this.votingSessionPin = votingSessionPin;
 		mainPanel().add(getVotingSessionPanel());
 		getVotingSessionPanel().clear();
 
@@ -298,7 +300,7 @@ public class Manager implements EntryPoint {
 		SimplePanel pinCodePanel = new SimplePanel();
 		pinCodePanel.setStyleName("pinCodePanel");
 		getVotingSessionPanel().add(pinCodePanel);
-		pinCodePanel.add(new Label(votingSessionId));
+		pinCodePanel.add(new Label(votingSessionPin));
 
 		// SimplePanel qrCodePanel = new SimplePanel();
 		// getVotingSessionPanel().add(qrCodePanel);
@@ -470,8 +472,19 @@ public class Manager implements EntryPoint {
 						}
 
 						@Override
-						public void onSuccess(String votingSessionId) {
-							beginVotingSession(votingSessionId);
+						public void onSuccess(final String votingSessionId) {
+							votingService.getSessionPin(votingSessionId, new AsyncCallback<String>() {
+								
+								@Override
+								public void onSuccess(String votingSessionPin) {
+									beginVotingSession(votingSessionId, votingSessionPin);
+								}
+								
+								@Override
+								public void onFailure(Throwable caught) {
+									getStartSessionPanel().setVisible(true);
+								}
+							});
 						}
 					});
 		}

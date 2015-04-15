@@ -13,110 +13,145 @@ import javax.servlet.ServletException;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import de.kune.client.VotingService;
+import de.kune.client.Options;
+import de.kune.client.VotingClientService;
+import de.kune.client.VotingManagerService;
 
 /**
  * The server side implementation of the RPC service.
  */
 @SuppressWarnings("serial")
 public class VotingServiceImpl extends RemoteServiceServlet implements
-		VotingService {
+		VotingManagerService, VotingClientService {
 
 	private static final String SERVLET_CONTEXT_DATA_KEY = "de.kune.easyvote.data";
 	private static final long TIMEOUT_IN_MILLIS = 30 * 60 * 1000;
-	private ConcurrentMap<String, VotingSession> votingSessions;
+	private ConcurrentMap<String, Object> data;
+	private ConcurrentMap<String, VotingSession> votingSessionsBySessionId;
+	private ConcurrentMap<String, VotingSession> votingSessionsBySessionPin;
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 		synchronized (getServletContext()) {
-			votingSessions = (ConcurrentMap<String, VotingSession>) getServletContext()
+			data = (ConcurrentMap<String, Object>) getServletContext()
 					.getAttribute(SERVLET_CONTEXT_DATA_KEY);
-			if (votingSessions == null) {
-				getServletContext()
-						.setAttribute(
-								SERVLET_CONTEXT_DATA_KEY,
-								votingSessions = new ConcurrentHashMap<String, VotingSession>());
+			if (data == null) {
+				getServletContext().setAttribute(SERVLET_CONTEXT_DATA_KEY,
+						data = new ConcurrentHashMap<String, Object>());
 			}
 		}
+		data.putIfAbsent("votingSessionsBySessionId",
+				new ConcurrentHashMap<String, VotingSession>());
+		data.putIfAbsent("votingSessionsBySessionPin",
+				new ConcurrentHashMap<String, VotingSession>());
+		votingSessionsBySessionId = (ConcurrentMap<String, VotingSession>) data
+				.get("votingSessionsBySessionId");
+		votingSessionsBySessionPin = (ConcurrentMap<String, VotingSession>) data
+				.get("votingSessionsBySessionPin");
 	}
 
 	@Override
 	public String createVotingSession(String name) {
 		VotingSession session = new VotingSession(name);
-		while (session != votingSessions.putIfAbsent(session.getId(), session))
+		while (session != votingSessionsBySessionPin.putIfAbsent(
+				session.getPin(), session))
 			;
+		votingSessionsBySessionId.put(session.getId(), session);
 		return session.getId();
 	}
 
-	private VotingSession getVotingSession(String votingSessionId) {
-		VotingSession result = votingSessions.get(votingSessionId);
+	private VotingSession getVotingSessionBySessionId(String votingSessionId) {
+		VotingSession result = votingSessionsBySessionId.get(votingSessionId);
 		if (result == null
 				|| result.getActivityTimestamp() < System.currentTimeMillis()
 						- TIMEOUT_IN_MILLIS) {
-			votingSessions.remove(votingSessionId);
+			if (result != null) {
+				votingSessionsBySessionId.remove(votingSessionId);
+				votingSessionsBySessionPin.remove(result.getPin());
+			}
+			throw new IllegalArgumentException("No such voting session");
+		}
+		return result;
+	}
+
+	private VotingSession getVotingSessionBySessionPin(String pin) {
+		VotingSession result = votingSessionsBySessionPin.get(pin);
+		if (result == null
+				|| result.getActivityTimestamp() < System.currentTimeMillis()
+						- TIMEOUT_IN_MILLIS) {
+			if (result != null) {
+				votingSessionsBySessionId.remove(result.getId());
+				votingSessionsBySessionPin.remove(pin);
+			}
 			throw new IllegalArgumentException("No such voting session");
 		}
 		return result;
 	}
 
 	@Override
-	public void vote(String votingSessionId, String voterId, Set<String> options) {
-		if (!getVotingSession(votingSessionId).isVotingRoundOpen()) {
+	public void vote(String sessionPin, String voterId, Set<String> options) {
+		if (!getVotingSessionBySessionPin(sessionPin).isVotingRoundOpen()) {
 			throw new IllegalStateException("Voting is currently not allowed");
 		}
-		getVotingSession(votingSessionId).vote(voterId, options);
+		getVotingSessionBySessionPin(sessionPin).vote(voterId, options);
 	}
 
 	@Override
-	public void beginVotingRound(String votingSessionId, String title,
-			String[] options) {
-		VotingSession session = getVotingSession(votingSessionId);
+	public void beginVotingRound(String sessionId, String title,
+			String[] options, boolean multipleSelectionAllowed) {
+		VotingSession session = getVotingSessionBySessionId(sessionId);
 		session.setRoundTitle(title);
 		session.resetVotes();
-		session.setOptions(new LinkedHashSet<String>(Arrays.asList(options)));
+		session.setOptions(new LinkedHashSet<String>(Arrays.asList(options)),
+				multipleSelectionAllowed);
 		session.setVotingRoundOpen(true);
 	}
 
 	@Override
-	public void endVotingRound(String votingSessionId) {
-		getVotingSession(votingSessionId).setVotingRoundOpen(false);
+	public void endVotingRound(String sessionId) {
+		getVotingSessionBySessionId(sessionId).setVotingRoundOpen(false);
 	}
 
 	@Override
 	public Map<String, Set<String>> getVotes(String votingSessionId) {
-		return getVotingSession(votingSessionId).getVotes();
+		return getVotingSessionBySessionId(votingSessionId).getVotes();
 	}
 
 	@Override
-	public void closeVotingSession(String votingSessionId) {
-		votingSessions.remove(votingSessionId);
+	public void closeVotingSession(String sessionPin) {
+		votingSessionsBySessionId.remove(sessionPin);
 	}
 
 	@Override
-	public Set<String> getOptions(String votingSessionId) {
-		return getVotingSession(votingSessionId).isVotingRoundOpen() ? getVotingSession(
-				votingSessionId).getOptions()
-				: Collections.<String> emptySet();
+	public Options getOptions(String sessionPin) {
+		return getVotingSessionBySessionPin(sessionPin).isVotingRoundOpen() ? getVotingSessionBySessionPin(
+				sessionPin).getOptions()
+				: new Options(Collections.<String> emptySet(), false);
 	}
 
 	@Override
 	public Set<String> getVoters(String votingSessionId) {
-		return getVotingSession(votingSessionId).getVoters();
+		return getVotingSessionBySessionId(votingSessionId).getVoters();
 	}
 
 	@Override
-	public String join(String votingSessionId) {
+	public String join(String sessionPin) {
 		String voterId = UuidUtil.getCompressedUuid(true);
-		getVotingSession(votingSessionId).addVoter(voterId);
+		getVotingSessionBySessionPin(sessionPin).addVoter(voterId);
 		return voterId;
 	}
 
 	@Override
-	public void leave(String votingSessionId, String voterId) {
-		System.out.println(voterId + " is leaving " + votingSessionId);
-		getVotingSession(votingSessionId).removeVoter(voterId);
+	public void leave(String sessionPin, String voterId) {
+		System.out.println(voterId + " is leaving " + sessionPin);
+		getVotingSessionBySessionPin(sessionPin).removeVoter(voterId);
+	}
+
+	@Override
+	public String getSessionPin(String sessionId) {
+		return getVotingSessionBySessionId(sessionId).getPin();
 	}
 
 }

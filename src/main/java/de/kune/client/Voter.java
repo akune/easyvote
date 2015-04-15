@@ -1,6 +1,6 @@
 package de.kune.client;
 
-import static de.kune.client.VotingServiceAsync.Util.getInstance;
+import static de.kune.client.VotingClientServiceAsync.Util.getInstance;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.ToggleButton;
 
 public class Voter {
 
-	private final VotingServiceAsync votingService = getInstance();
+	private final VotingClientServiceAsync votingService = getInstance();
 
 	private FlowPanel votingSessionPanel;
 
@@ -36,10 +36,19 @@ public class Voter {
 
 	private List<ToggleButton> votingOptionButtons;
 
+	protected boolean multipleSelectionAllowed;
+
 	private ClickHandler votingOptionButtonClickHandler = new ClickHandler() {
 
 		@Override
 		public void onClick(ClickEvent event) {
+			if (!multipleSelectionAllowed) {
+				for (ToggleButton b: getVotingOptionButtons()) {
+					if (b != event.getSource()) {
+						b.setDown(false);
+					}
+				}
+			}
 			triggerVote();
 		}
 	};
@@ -160,22 +169,23 @@ public class Voter {
 		voteTimer.schedule(1000);
 	}
 
-	private void updateOptions(Set<String> options) {
-		while (getVotingOptionButtons().size() > options.size()) {
+	private void updateOptions(Options options) {
+		while (getVotingOptionButtons().size() > options.getOptions().size()) {
 			removeLastVotingOptionButton();
 		}
-		while (getVotingOptionButtons().size() < options.size()) {
+		while (getVotingOptionButtons().size() < options.getOptions().size()) {
 			addVotingOptionButton();
 		}
-		String[] o = options.toArray(new String[0]);
-		for (int i = 0; i < options.size(); i++) {
+		this.multipleSelectionAllowed = options.isMultipleSelectionAllowed();
+		String[] o = options.getOptions().toArray(new String[0]);
+		for (int i = 0; i < options.getOptions().size(); i++) {
 			try {
 				getVotingOptionButtons().get(i).setText(o[i]);
 			} catch (NullPointerException e) {
 				// Ignore
 			}
 		}
-		getWaitingForVotingRoundPanel().setVisible(options.isEmpty());
+		getWaitingForVotingRoundPanel().setVisible(options.getOptions().isEmpty());
 	}
 
 	private Panel getWaitingForVotingRoundPanel() {
@@ -212,10 +222,10 @@ public class Voter {
 
 	private void update() {
 		votingService.getOptions(votingSessionId,
-				new AsyncCallback<Set<String>>() {
+				new AsyncCallback<Options>() {
 
 					@Override
-					public void onSuccess(Set<String> result) {
+					public void onSuccess(Options result) {
 						updateOptions(result);
 						new Timer() {
 							@Override

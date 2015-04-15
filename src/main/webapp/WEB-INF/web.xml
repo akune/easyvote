@@ -33,7 +33,7 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>votingServlet</servlet-name>
-    <url-pattern>/manager/vote</url-pattern>
+    <url-pattern>/manager/manage</url-pattern>
   </servlet-mapping>
 
   <servlet-mapping>
