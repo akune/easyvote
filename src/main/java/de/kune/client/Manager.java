@@ -324,7 +324,7 @@ public class Manager implements EntryPoint {
 		SimplePanel pinCodePanel = new SimplePanel();
 		pinCodePanel.setStyleName("pinCodePanel");
 		getVotingSessionPanel().add(pinCodePanel);
-		pinCodePanel.add(new Label(votingSessionPin));
+		pinCodePanel.add(new Label(model.getVotingSessionPin()));
 
 		// SimplePanel qrCodePanel = new SimplePanel();
 		// getVotingSessionPanel().add(qrCodePanel);
