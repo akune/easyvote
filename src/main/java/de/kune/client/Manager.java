@@ -3,16 +3,20 @@ package de.kune.client;
 import static de.kune.client.VotingManagerServiceAsync.Util.getInstance;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.RootPanel;
 
 import de.kune.client.ManagerModel.State;
@@ -239,6 +243,7 @@ public class Manager implements EntryPoint {
 	public void onModuleLoad() {
 		view.initialize(mainPanel());
 		view.setModel(model);
+		view.setOptions(options());
 
 		view.setStartVotingSessionAction(new Runnable() {
 			@Override
@@ -280,6 +285,23 @@ public class Manager implements EntryPoint {
 					});
 		}
 
+	}
+
+	private Map<String, Runnable> options() {
+		Map<String, Runnable> result = new LinkedHashMap<String, Runnable>();
+		result.put("A, B, C", new Runnable() {
+			@Override
+			public void run() {
+				model.updateOptions(new String[] { "A", "B", "C" }, true);
+			}
+		});
+		result.put("Yes / No", new Runnable() {
+			@Override
+			public void run() {
+				model.updateOptions(new String[] { "Yes", "No" }, false);
+			}
+		});
+		return result;
 	}
 
 }

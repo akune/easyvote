@@ -107,35 +107,66 @@ public class ManagerView {
 		return buttonsPanel;
 	}
 
+	public void setOptions(Map<String, Runnable> optionsAndActions) {
+		getOptionsPanel().clear();
+		Panel sp = new VerticalPanel();
+		optionsPanel.add(sp);
+		for (final Entry<String, Runnable> e : optionsAndActions.entrySet()) {
+			RadioButton optionsRadioButton = new RadioButton("options",
+					e.getKey());
+			optionsRadioButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					e.getValue().run();
+					optionsPanel.getHeaderTextAccessor().setText(
+							"Options: "
+									+ ((RadioButton) event.getSource())
+											.getText());
+					optionsPanel.setOpen(false);
+				}
+			});
+			if (!sp.iterator().hasNext()) {
+				e.getValue().run();
+				optionsPanel.getHeaderTextAccessor().setText(
+						"Options: " + e.getKey());
+				optionsPanel.setOpen(false);
+				optionsRadioButton.setValue(true);
+			}
+			sp.add(optionsRadioButton);
+		}
+	}
+
 	private DisclosurePanel getOptionsPanel() {
 		if (optionsPanel == null) {
-			optionsPanel = new DisclosurePanel("Options: A, B, C");
+			optionsPanel = new DisclosurePanel("Options");
 			getButtonsPanel().add(optionsPanel);
-			Panel sp = new VerticalPanel();
-			optionsPanel.add(sp);
-			RadioButton abcOptions = new RadioButton("options", "A, B, C");
-			abcOptions.setValue(true);
-			abcOptions.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					optionsPanel.getHeaderTextAccessor().setText(
-							"Options: A, B, C");
-					model.updateOptions(new String[] { "A", "B", "C" }, true);
-					optionsPanel.setOpen(false);
-				}
-			});
-			sp.add(abcOptions);
-			RadioButton yesNoOptions = new RadioButton("options", "Yes / No");
-			sp.add(yesNoOptions);
-			yesNoOptions.addClickHandler(new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					optionsPanel.getHeaderTextAccessor().setText(
-							"Options: Yes / No");
-					model.updateOptions(new String[] { "Yes", "No" }, false);
-					optionsPanel.setOpen(false);
-				}
-			});
+//			RadioButton abcOptions = new RadioButton("options", "A, B, C");
+//			abcOptions.setValue(true);
+//			abcOptions.addClickHandler(new ClickHandler() {
+//				@Override
+//				public void onClick(ClickEvent event) {
+//					optionsPanel.getHeaderTextAccessor().setText(
+//							"Options: "
+//									+ ((RadioButton) event.getSource())
+//											.getText());
+//					model.updateOptions(new String[] { "A", "B", "C" }, true);
+//					optionsPanel.setOpen(false);
+//				}
+//			});
+//			sp.add(abcOptions);
+//			RadioButton yesNoOptions = new RadioButton("options", "Yes / No");
+//			sp.add(yesNoOptions);
+//			yesNoOptions.addClickHandler(new ClickHandler() {
+//				@Override
+//				public void onClick(ClickEvent event) {
+//					optionsPanel.getHeaderTextAccessor().setText(
+//							"Options: "
+//									+ ((RadioButton) event.getSource())
+//											.getText());
+//					model.updateOptions(new String[] { "Yes", "No" }, false);
+//					optionsPanel.setOpen(false);
+//				}
+//			});
 		}
 		return optionsPanel;
 	}
