@@ -421,4 +421,8 @@ public class ManagerView {
 		});
 	}
 
+	public native void closeWindow() /*-{
+	$wnd.close();
+	}-*/;
+
 }
