@@ -119,7 +119,7 @@ public class ManagerView {
 				public void onClick(ClickEvent event) {
 					e.getValue().run();
 					optionsPanel.getHeaderTextAccessor().setText(
-							"Options: "
+							messages.optionsPrefix()
 									+ ((RadioButton) event.getSource())
 											.getText());
 					optionsPanel.setOpen(false);
@@ -128,7 +128,7 @@ public class ManagerView {
 			if (!sp.iterator().hasNext()) {
 				e.getValue().run();
 				optionsPanel.getHeaderTextAccessor().setText(
-						"Options: " + e.getKey());
+						messages.optionsPrefix() + e.getKey());
 				optionsPanel.setOpen(false);
 				optionsRadioButton.setValue(true);
 			}
@@ -138,35 +138,8 @@ public class ManagerView {
 
 	private DisclosurePanel getOptionsPanel() {
 		if (optionsPanel == null) {
-			optionsPanel = new DisclosurePanel("Options");
+			optionsPanel = new DisclosurePanel(messages.optionsPrefix());
 			getButtonsPanel().add(optionsPanel);
-//			RadioButton abcOptions = new RadioButton("options", "A, B, C");
-//			abcOptions.setValue(true);
-//			abcOptions.addClickHandler(new ClickHandler() {
-//				@Override
-//				public void onClick(ClickEvent event) {
-//					optionsPanel.getHeaderTextAccessor().setText(
-//							"Options: "
-//									+ ((RadioButton) event.getSource())
-//											.getText());
-//					model.updateOptions(new String[] { "A", "B", "C" }, true);
-//					optionsPanel.setOpen(false);
-//				}
-//			});
-//			sp.add(abcOptions);
-//			RadioButton yesNoOptions = new RadioButton("options", "Yes / No");
-//			sp.add(yesNoOptions);
-//			yesNoOptions.addClickHandler(new ClickHandler() {
-//				@Override
-//				public void onClick(ClickEvent event) {
-//					optionsPanel.getHeaderTextAccessor().setText(
-//							"Options: "
-//									+ ((RadioButton) event.getSource())
-//											.getText());
-//					model.updateOptions(new String[] { "Yes", "No" }, false);
-//					optionsPanel.setOpen(false);
-//				}
-//			});
 		}
 		return optionsPanel;
 	}
@@ -180,7 +153,8 @@ public class ManagerView {
 
 	private ToggleButton getRealTimeUpdateButton() {
 		if (realTimeUpdateButton == null) {
-			realTimeUpdateButton = new ToggleButton("Real-Time Update");
+			realTimeUpdateButton = new ToggleButton(
+					messages.realTimeUpdateToggleButton());
 		}
 		return realTimeUpdateButton;
 	}
@@ -188,7 +162,7 @@ public class ManagerView {
 	private TextBox getSessionNameTextBox() {
 		if (sessionNameTextBox == null) {
 			sessionNameTextBox = new TextBox();
-			sessionNameTextBox.setText("Voting Session");
+			sessionNameTextBox.setText(messages.votingSessionLabel());
 		}
 		return sessionNameTextBox;
 	}
@@ -196,15 +170,18 @@ public class ManagerView {
 	private Button getStartSessionButton() {
 		if (startSessionButton == null) {
 			startSessionButton = new Button();
-			startSessionButton.setText("Start Session");
+			startSessionButton.setText(messages.beginVotingSessionButton());
 		}
 		return startSessionButton;
 	}
 
+	private final ManagerMessages messages = GWT.create(ManagerMessages.class);
+
 	private Button getStartNewVotingRoundButton() {
 		if (startNewVotingRoundButton == null) {
 			startNewVotingRoundButton = new Button();
-			startNewVotingRoundButton.setText("Begin Voting Round");
+			startNewVotingRoundButton
+					.setText(messages.beginVotingRoundButton());
 		}
 		return startNewVotingRoundButton;
 	}
@@ -212,7 +189,7 @@ public class ManagerView {
 	private Button getCloseVotingSessionButton() {
 		if (closeVotingSessionButton == null) {
 			closeVotingSessionButton = new Button();
-			closeVotingSessionButton.setText("End Voting Session");
+			closeVotingSessionButton.setText(messages.endVotingSessionButton());
 		}
 		return closeVotingSessionButton;
 	}
@@ -220,14 +197,14 @@ public class ManagerView {
 	private Button getEndVotingRoundButton() {
 		if (endVotingRoundButton == null) {
 			endVotingRoundButton = new Button();
-			endVotingRoundButton.setText("End Voting Round");
+			endVotingRoundButton.setText(messages.endVotingRoundButton());
 		}
 		return endVotingRoundButton;
 	}
 
 	public void updateParticipantsPanel() {
 		Label participantsLabel = getParticipantsLabel();
-		participantsLabel.setText(model.getVoteCount() + " vote(s)");
+		participantsLabel.setText(messages.votesLabel(model.getVoteCount()));
 	}
 
 	private Label getParticipantsLabel() {
@@ -319,8 +296,9 @@ public class ManagerView {
 		GWT.log("Updating votes chart");
 		DataTable votesData = DataTable.create();
 		GWT.log("Updating votes chart data");
-		votesData.addColumn(ColumnType.STRING, "Answer");
-		votesData.addColumn(ColumnType.NUMBER, "Percentage");
+		votesData.addColumn(ColumnType.STRING, messages.answerColumnLabel());
+		votesData
+				.addColumn(ColumnType.NUMBER, messages.percentageColumnLabel());
 		Map<String, Integer> answerCounts = new LinkedHashMap<String, Integer>();
 		if (model.getOptions() != null) {
 			for (String option : model.getOptions()) {
@@ -422,7 +400,7 @@ public class ManagerView {
 	}
 
 	public native void closeWindow() /*-{
-	$wnd.close();
-	}-*/;
+										$wnd.close();
+										}-*/;
 
 }
