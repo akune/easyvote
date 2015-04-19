@@ -35,6 +35,10 @@ import com.googlecode.gwt.charts.client.options.VAxis;
  */
 public class ManagerView {
 
+	private final ManagerMessages messages = GWT.create(ManagerMessages.class);
+	private final ManagerConstants constants = GWT
+			.create(ManagerConstants.class);
+	
 	private ManagerModel model;
 	private Panel mainPanel;
 	private FlowPanel startSessionPanel;
@@ -113,7 +117,7 @@ public class ManagerView {
 		optionsPanel.add(sp);
 		for (final Entry<String, Runnable> e : optionsAndActions.entrySet()) {
 			RadioButton optionsRadioButton = new RadioButton("options",
-					e.getKey());
+					constants.getString(e.getKey()));
 			optionsRadioButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -128,7 +132,7 @@ public class ManagerView {
 			if (!sp.iterator().hasNext()) {
 				e.getValue().run();
 				optionsPanel.getHeaderTextAccessor().setText(
-						messages.optionsPrefix() + e.getKey());
+						messages.optionsPrefix() + constants.getString(e.getKey()));
 				optionsPanel.setOpen(false);
 				optionsRadioButton.setValue(true);
 			}
@@ -174,8 +178,6 @@ public class ManagerView {
 		}
 		return startSessionButton;
 	}
-
-	private final ManagerMessages messages = GWT.create(ManagerMessages.class);
 
 	private Button getStartNewVotingRoundButton() {
 		if (startNewVotingRoundButton == null) {

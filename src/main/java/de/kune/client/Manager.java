@@ -32,13 +32,13 @@ public class Manager implements EntryPoint {
 
 	private Map<String, Runnable> options() {
 		Map<String, Runnable> result = new LinkedHashMap<String, Runnable>();
-		result.put("A, B, C", new Runnable() {
+		result.put("abcOptionsLabel", new Runnable() {
 			@Override
 			public void run() {
 				model.updateOptions(new String[] { "A", "B", "C" }, true);
 			}
 		});
-		result.put("Yes / No", new Runnable() {
+		result.put("yesNoOptionsLabel", new Runnable() {
 			@Override
 			public void run() {
 				model.updateOptions(new String[] { "Yes", "No" }, false);
