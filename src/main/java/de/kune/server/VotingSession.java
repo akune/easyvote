@@ -32,11 +32,11 @@ public class VotingSession implements Serializable {
 	private final Map<String, Set<String>> votes;
 	private final Set<String> voters;
 	private boolean votingRoundOpen;
-	private Set<String> options;
 	private long activityTimestamp;
 
 	private String roundTitle;
 	private boolean multipleSelectionAllowed;
+	private String optionsKey;
 
 	public VotingSession(String name) {
 		this.id = getCompressedUuid(true);
@@ -59,7 +59,7 @@ public class VotingSession implements Serializable {
 
 	public Options getOptions() {
 		updateActivityTimestamp();
-		return new Options(options, multipleSelectionAllowed);
+		return new Options(optionsKey, multipleSelectionAllowed);
 	}
 
 	public String getId() {
@@ -102,9 +102,9 @@ public class VotingSession implements Serializable {
 		votes.clear();
 	}
 
-	public void setOptions(Set<String> options, boolean multipleSelectionAllowed) {
+	public void setOptions(String optionsKey, boolean multipleSelectionAllowed) {
 		updateActivityTimestamp();
-		this.options = new LinkedHashSet<String>(options);
+		this.optionsKey = optionsKey;
 		this.multipleSelectionAllowed = multipleSelectionAllowed;
 	}
 

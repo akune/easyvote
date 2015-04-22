@@ -1,8 +1,5 @@
 package de.kune.server;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -100,11 +97,11 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public void beginVotingRound(String sessionId, String title,
-			String[] options, boolean multipleSelectionAllowed) {
+			String optionsKey, boolean multipleSelectionAllowed) {
 		VotingSession session = getVotingSessionBySessionId(sessionId);
 		session.setRoundTitle(title);
 		session.resetVotes();
-		session.setOptions(new LinkedHashSet<String>(Arrays.asList(options)),
+		session.setOptions(optionsKey,
 				multipleSelectionAllowed);
 		session.setVotingRoundOpen(true);
 	}
@@ -128,7 +125,7 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 	public Options getOptions(String sessionPin) {
 		return getVotingSessionBySessionPin(sessionPin).isVotingRoundOpen() ? getVotingSessionBySessionPin(
 				sessionPin).getOptions()
-				: new Options(Collections.<String> emptySet(), false);
+				: new Options(null, false);
 	}
 
 	@Override

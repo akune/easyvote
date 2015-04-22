@@ -1,7 +1,5 @@
 package de.kune.client;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,8 +20,7 @@ public class ManagerModel {
 	/**
 	 * The options currently available for vote.
 	 */
-	private Options options = new Options(new LinkedHashSet<String>(
-			Arrays.asList(new String[] { "A", "B", "C" })), true);
+	private Options options = new Options("abcOptions", true);
 
 	/**
 	 * The current voting session's id.
@@ -84,19 +81,17 @@ public class ManagerModel {
 		this.participants = participants;
 	}
 
-	public String[] getOptions() {
-		return options == null ? null : options.getOptions().toArray(
-				new String[0]);
+	public String getOptionsKey() {
+		return options == null ? null : options.getOptionsKey();
 	}
 
 	public boolean isMultipleSelectionAllowed() {
 		return options == null ? null : options.isMultipleSelectionAllowed();
 	}
 
-	public void updateOptions(String[] options, boolean multipleSelectionAllowed) {
-		this.options = new Options(new LinkedHashSet<String>(
-				Arrays.asList(options == null ? new String[0] : options)),
-				multipleSelectionAllowed);
+	public void updateOptions(String optionsKey,
+			boolean multipleSelectionAllowed) {
+		this.options = new Options(optionsKey, multipleSelectionAllowed);
 	}
 
 	public String getVotingSessionPin() {

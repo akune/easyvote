@@ -18,7 +18,6 @@
   <entry-point class='de.kune.client.Manager' />
 
   <extend-property name="locale" values="de"/>
-
   <set-configuration-property name="locale.useragent" value="Y"/>
 
   <!-- Specify the paths for translatable code                    -->

@@ -22,7 +22,7 @@ public interface VotingManagerService extends RemoteService {
 
 	Map<String, Set<String>> getVotes(String sessionId);
 
-	void beginVotingRound(String sessionId, String title, String[] options,
+	void beginVotingRound(String sessionId, String title, String optionsKey,
 			boolean multipleSelectionAllowed);
 
 	Set<String> getVoters(String sessionId);

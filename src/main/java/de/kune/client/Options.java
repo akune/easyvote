@@ -1,32 +1,32 @@
 package de.kune.client;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 public class Options implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private Set<String> options;
+	private String optionsKey;
 	private boolean multipleSelectionAllowed;
-
-	public Options() {
-		this.options = new HashSet<String>();
-		this.multipleSelectionAllowed = false;
-	}
 	
-	public Options(Set<String> options, boolean multipleSelectionAllowed) {
-		this.options = new LinkedHashSet<String>(options);
+	public Options() {
+		this(null, false);
+	}
+
+	public Options(String optionsKey, boolean multipleSelectionAllowed) {
+		this.optionsKey = optionsKey == null ? "none" : optionsKey;
 		this.multipleSelectionAllowed = multipleSelectionAllowed;
 	}
 
-	public Set<String> getOptions() {
-		return options;
+	public String getOptionsKey() {
+		return optionsKey;
 	}
 
 	public boolean isMultipleSelectionAllowed() {
 		return multipleSelectionAllowed;
+	}
+	
+	public String toString() {
+		return optionsKey + "/" + multipleSelectionAllowed;
 	}
 
 }

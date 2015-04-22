@@ -2,6 +2,7 @@ package de.kune.client;
 
 import static de.kune.client.VotingClientServiceAsync.Util.getInstance;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class Voter {
 		@Override
 		public void onClick(ClickEvent event) {
 			if (!multipleSelectionAllowed) {
-				for (ToggleButton b: getVotingOptionButtons()) {
+				for (ToggleButton b : getVotingOptionButtons()) {
 					if (b != event.getSource()) {
 						b.setDown(false);
 					}
@@ -61,6 +62,7 @@ public class Voter {
 		votingService.join(votingSessionId, new AsyncCallback<String>() {
 			@Override
 			public void onSuccess(String result) {
+				GWT.log("Joined session " + votingSessionId);
 				Window.addWindowClosingHandler(new ClosingHandler() {
 					@Override
 					public void onWindowClosing(ClosingEvent event) {
@@ -156,36 +158,49 @@ public class Voter {
 
 	private Set<String> determineVote() {
 		HashSet<String> options = new HashSet<String>();
+		List<String> availableOptions = Arrays.asList(optionValues);
 		for (ToggleButton button : getVotingOptionButtons()) {
 			if (button.isDown()) {
-				options.add(button.getText());
+				int index = availableOptions.indexOf(button.getText());
+				if (index >= 0) {
+					options.add(Integer.toString(index));
+				}
 			}
 		}
 		return options;
 	}
 
 	protected void triggerVote() {
+		GWT.log("Triggering vote.");
 		voteTimer.cancel();
 		voteTimer.schedule(1000);
 	}
 
+	private final OptionsConstants constants = GWT
+			.create(OptionsConstants.class);
+
+	private String[] optionValues;
+
 	private void updateOptions(Options options) {
-		while (getVotingOptionButtons().size() > options.getOptions().size()) {
+		this.optionValues = "none".equals(options.getOptionsKey()) ? new String[0]
+				: constants.getStringArray(options.getOptionsKey());
+		GWT.log("Options: " + Arrays.toString(optionValues) + "/"
+				+ optionValues.length);
+		while (getVotingOptionButtons().size() > optionValues.length) {
 			removeLastVotingOptionButton();
 		}
-		while (getVotingOptionButtons().size() < options.getOptions().size()) {
+		while (getVotingOptionButtons().size() < optionValues.length) {
 			addVotingOptionButton();
 		}
 		this.multipleSelectionAllowed = options.isMultipleSelectionAllowed();
-		String[] o = options.getOptions().toArray(new String[0]);
-		for (int i = 0; i < options.getOptions().size(); i++) {
+		for (int i = 0; i < optionValues.length; i++) {
 			try {
-				getVotingOptionButtons().get(i).setText(o[i]);
+				getVotingOptionButtons().get(i).setText(optionValues[i]);
 			} catch (NullPointerException e) {
 				// Ignore
 			}
 		}
-		getWaitingForVotingRoundPanel().setVisible(options.getOptions().isEmpty());
+		getWaitingForVotingRoundPanel().setVisible(optionValues.length == 0);
 	}
 
 	private Panel getWaitingForVotingRoundPanel() {
@@ -205,7 +220,7 @@ public class Voter {
 	}
 
 	private void removeLastVotingOptionButton() {
-		if (getVotingOptionButtons().size() > 0) {
+		if (getVotingOptionButtons().size() >= 0) {
 			ToggleButton button = getVotingOptionButtons().get(
 					getVotingOptionButtons().size() - 1);
 			getVotingOptionButtons().remove(button);
@@ -221,30 +236,31 @@ public class Voter {
 	}
 
 	private void update() {
-		votingService.getOptions(votingSessionId,
-				new AsyncCallback<Options>() {
-
+		votingService.getOptions(votingSessionId, new AsyncCallback<Options>() {
+			@Override
+			public void onSuccess(Options result) {
+				GWT.log("Updated. Options: " + result);
+				updateOptions(result);
+				new Timer() {
 					@Override
-					public void onSuccess(Options result) {
-						updateOptions(result);
-						new Timer() {
-							@Override
-							public void run() {
-								update();
-							}
-						}.schedule(1000);
+					public void run() {
+						update();
 					}
+				}.schedule(1000);
+				GWT.log("Scheduled next update.");
+			}
 
+			@Override
+			public void onFailure(Throwable caught) {
+				GWT.log("Updating failed.");
+				new Timer() {
 					@Override
-					public void onFailure(Throwable caught) {
-						new Timer() {
-							@Override
-							public void run() {
-								update();
-							}
-						}.schedule(1000);
+					public void run() {
+						update();
 					}
-				});
+				}.schedule(1000);
+			}
+		});
 	}
 
 	private Panel getVotingSessionPanel() {

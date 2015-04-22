@@ -23,7 +23,6 @@ public class ManagerController {
 
 	private final VotingManagerServiceAsync votingService = getInstance();
 
-
 	private ManagerModel model;
 	private ManagerView view;
 
@@ -133,7 +132,7 @@ public class ManagerController {
 
 	private void beginVotingRound() {
 		votingService.beginVotingRound(model.getVotingSessionId(),
-				"Voting Round", model.getOptions(),
+				"Voting Round", model.getOptionsKey(),
 				model.isMultipleSelectionAllowed(), new AsyncCallback<Void>() {
 					@Override
 					public void onFailure(Throwable caught) {

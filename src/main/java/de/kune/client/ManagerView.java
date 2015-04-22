@@ -36,9 +36,9 @@ import com.googlecode.gwt.charts.client.options.VAxis;
 public class ManagerView {
 
 	private final ManagerMessages messages = GWT.create(ManagerMessages.class);
-	private final ManagerConstants constants = GWT
-			.create(ManagerConstants.class);
-	
+	private final OptionsConstants constants = GWT
+			.create(OptionsConstants.class);
+
 	private ManagerModel model;
 	private Panel mainPanel;
 	private FlowPanel startSessionPanel;
@@ -132,7 +132,8 @@ public class ManagerView {
 			if (!sp.iterator().hasNext()) {
 				e.getValue().run();
 				optionsPanel.getHeaderTextAccessor().setText(
-						messages.optionsPrefix() + constants.getString(e.getKey()));
+						messages.optionsPrefix()
+								+ constants.getString(e.getKey()));
 				optionsPanel.setOpen(false);
 				optionsRadioButton.setValue(true);
 			}
@@ -302,9 +303,10 @@ public class ManagerView {
 		votesData
 				.addColumn(ColumnType.NUMBER, messages.percentageColumnLabel());
 		Map<String, Integer> answerCounts = new LinkedHashMap<String, Integer>();
-		if (model.getOptions() != null) {
-			for (String option : model.getOptions()) {
-				answerCounts.put(option, 0);
+		if (model.getOptionsKey() != null) {
+			for (int i = 0; i < constants
+					.getStringArray(model.getOptionsKey()).length; i++) {
+				answerCounts.put(Integer.toString(i), 0);
 			}
 		}
 		int votesCount = 0;
@@ -323,9 +325,9 @@ public class ManagerView {
 		GWT.log("Answers: " + answerCounts);
 		for (Entry<String, Integer> e : answerCounts.entrySet()) {
 			if (votesCount == 0) {
-				votesData.addRow(e.getKey(), 0);
+				votesData.addRow(constants.getStringArray(model.getOptionsKey())[Integer.parseInt(e.getKey())], 0);
 			} else {
-				votesData.addRow(e.getKey(),
+				votesData.addRow(constants.getStringArray(model.getOptionsKey())[Integer.parseInt(e.getKey())],
 						(Double) ((double) e.getValue() / (double) votesCount));
 			}
 		}
