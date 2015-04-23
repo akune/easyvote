@@ -279,7 +279,7 @@ public class ManagerView {
 				@Override
 				public void onClick(ClickEvent event) {
 					getOptionsPanel().center();
-					getOptionsPanel().setPopupPosition(getOptionsPanel().getPopupLeft(), 50);
+					getOptionsPanel().setPopupPosition(getOptionsPanel().getPopupLeft(), 170);
 				}
 			});
 		}
