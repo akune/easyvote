@@ -22,8 +22,8 @@ public interface ManagerMessages extends Messages {
 	@DefaultMessage("Percentage")
 	String percentageColumnLabel();
 
-	@DefaultMessage("Options: ")
-	String optionsPrefix();
+	@DefaultMessage("Options")
+	String optionsButton();
 
 	@DefaultMessage("Real-Time Update")
 	String realTimeUpdateToggleButton();

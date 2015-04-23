@@ -9,11 +9,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -49,12 +50,13 @@ public class ManagerView {
 	private Button endVotingRoundButton;
 	private Button closeVotingSessionButton;
 	private FlowPanel votingSessionPanel;
-	private DisclosurePanel optionsPanel;
-	private FlowPanel buttonsPanel;
+	private PopupPanel optionsPanel;
+	private Panel buttonsPanel;
 	private FlowPanel participantsPanel;
 	private SimplePanel votesChartPanel;
 	private ColumnChartOptions voteChartOptions;
 	private ColumnChart votesChart;
+	private Anchor optionsButton;
 
 	public void initialize(Panel mainPanel) {
 		this.mainPanel = mainPanel;
@@ -86,7 +88,7 @@ public class ManagerView {
 			getEndVotingRoundButton().setVisible(false);
 			getCloseVotingSessionButton().setVisible(true);
 			getVotingSessionPanel().setVisible(true);
-			getOptionsPanel().setVisible(true);
+			getOptionsButton().setVisible(true);
 			getVotesChartPanel().setVisible(true);
 			break;
 		case VOTING_ROUND_STARTED:
@@ -95,7 +97,7 @@ public class ManagerView {
 			getRealTimeUpdateButton().setVisible(true);
 			getCloseVotingSessionButton().setVisible(false);
 			getVotingSessionPanel().setVisible(true);
-			getOptionsPanel().setVisible(false);
+			getOptionsButton().setVisible(false);
 			getVotesChartPanel().setVisible(true);
 			break;
 		default:
@@ -103,18 +105,19 @@ public class ManagerView {
 		}
 	}
 
-	private FlowPanel getButtonsPanel() {
+	private Panel getButtonsPanel() {
 		if (buttonsPanel == null) {
 			buttonsPanel = new FlowPanel();
 			buttonsPanel.setStyleName("buttonsPanel");
+//			buttonsPanel.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
 		}
 		return buttonsPanel;
 	}
 
 	public void setOptions(Map<String, Runnable> optionsAndActions) {
 		getOptionsPanel().clear();
-		Panel sp = new VerticalPanel();
-		optionsPanel.add(sp);
+		Panel panel = new VerticalPanel();
+		optionsPanel.add(panel);
 		for (final Entry<String, Runnable> e : optionsAndActions.entrySet()) {
 			RadioButton optionsRadioButton = new RadioButton("options",
 					constants.getString(e.getKey()));
@@ -122,29 +125,24 @@ public class ManagerView {
 				@Override
 				public void onClick(ClickEvent event) {
 					e.getValue().run();
-					optionsPanel.getHeaderTextAccessor().setText(
-							messages.optionsPrefix()
-									+ ((RadioButton) event.getSource())
-											.getText());
-					optionsPanel.setOpen(false);
+					getOptionsButton().setText(messages.optionsButton().trim() + ": " + constants.getString(e.getKey()));
+					getOptionsPanel().hide();
 				}
 			});
-			if (!sp.iterator().hasNext()) {
+			if (!panel.iterator().hasNext()) {
 				e.getValue().run();
-				optionsPanel.getHeaderTextAccessor().setText(
-						messages.optionsPrefix()
-								+ constants.getString(e.getKey()));
-				optionsPanel.setOpen(false);
 				optionsRadioButton.setValue(true);
+				getOptionsButton().setText(messages.optionsButton().trim() + ": " + constants.getString(e.getKey()));
 			}
-			sp.add(optionsRadioButton);
+			panel.add(optionsRadioButton);
 		}
 	}
 
-	private DisclosurePanel getOptionsPanel() {
+	private PopupPanel getOptionsPanel() {
 		if (optionsPanel == null) {
-			optionsPanel = new DisclosurePanel(messages.optionsPrefix());
-			getButtonsPanel().add(optionsPanel);
+			optionsPanel = new PopupPanel(true, false);
+			optionsPanel.setGlassEnabled(true);
+			optionsPanel.setAnimationEnabled(true);
 		}
 		return optionsPanel;
 	}
@@ -226,7 +224,7 @@ public class ManagerView {
 	}
 
 	public void closeOptionsPanel() {
-		getOptionsPanel().setOpen(false);
+		getOptionsPanel().hide();
 	}
 
 	private SimplePanel getVotesChartPanel() {
@@ -247,8 +245,10 @@ public class ManagerView {
 		getButtonsPanel().add(getEndVotingRoundButton());
 		getButtonsPanel().add(getRealTimeUpdateButton());
 		getButtonsPanel().add(getCloseVotingSessionButton());
-		getButtonsPanel().add(getOptionsPanel());
-
+		VerticalPanel vp = new VerticalPanel();
+		vp.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
+		vp.add(getOptionsButton());
+		getButtonsPanel().add(vp);
 		getVotingSessionPanel().add(getButtonsPanel());
 
 		SimplePanel pinCodePanel = new SimplePanel();
@@ -270,6 +270,20 @@ public class ManagerView {
 		});
 
 		mainPanel.add(getParticipantsPanel());
+	}
+
+	private Anchor getOptionsButton() {
+		if (optionsButton == null) {
+			optionsButton = new Anchor(messages.optionsButton());
+			optionsButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					getOptionsPanel().center();
+					getOptionsPanel().setPopupPosition(getOptionsPanel().getPopupLeft(), 50);
+				}
+			});
+		}
+		return optionsButton;
 	}
 
 	private ColumnChart getVotesChart() {
@@ -304,8 +318,7 @@ public class ManagerView {
 				.addColumn(ColumnType.NUMBER, messages.percentageColumnLabel());
 		Map<String, Integer> answerCounts = new LinkedHashMap<String, Integer>();
 		if (model.getOptionsKey() != null) {
-			for (int i = 0; i < constants
-					.getStringArray(model.getOptionsKey()).length; i++) {
+			for (int i = 0; i < constants.getStringArray(model.getOptionsKey()).length; i++) {
 				answerCounts.put(Integer.toString(i), 0);
 			}
 		}
@@ -325,10 +338,14 @@ public class ManagerView {
 		GWT.log("Answers: " + answerCounts);
 		for (Entry<String, Integer> e : answerCounts.entrySet()) {
 			if (votesCount == 0) {
-				votesData.addRow(constants.getStringArray(model.getOptionsKey())[Integer.parseInt(e.getKey())], 0);
+				votesData.addRow(
+						constants.getStringArray(model.getOptionsKey())[Integer
+								.parseInt(e.getKey())], 0);
 			} else {
-				votesData.addRow(constants.getStringArray(model.getOptionsKey())[Integer.parseInt(e.getKey())],
-						(Double) ((double) e.getValue() / (double) votesCount));
+				votesData.addRow(
+						constants.getStringArray(model.getOptionsKey())[Integer
+								.parseInt(e.getKey())], (Double) ((double) e
+								.getValue() / (double) votesCount));
 			}
 		}
 		getVotesChart().draw(votesData, getVotesChartOptions());
