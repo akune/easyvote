@@ -55,3 +55,85 @@ div.pinCodePanel {
 	font-size: 30pt;
 	display: block;
 }
+
+input.gwt-TextBox {
+vertical-align: -moz-middle-with-baseline;
+	margin: 0;
+	border-radius: 10px 0 0 10px;
+	height: 19px;
+	line-height: 10pt;
+	padding: 2px 2px 2px 10px;
+	font-size: 9pt;
+	border: 1px solid transparent;
+	background: none;
+	-webkit-box-shadow: #06265C 0px 0px 5px 0px;
+	box-shadow: #06265C 0px 0px 5px 0px;
+}
+
+button.gwt-Button:hover {
+	border: none;
+	background: #26467C;
+}
+	
+input.gwt-TextBox + button.gwt-Button {
+	border-radius: 0 10px 10px 0;
+	padding: 2px 10px 2px 5px;
+	margin: 0;
+}
+
+button.gwt-Button {
+	vertical-align: -moz-middle-with-baseline;
+	margin: 1px;
+	border-radius: 10px 10px 10px 10px;
+	height: 25px;
+	padding: 2px 10px 2px 10px;
+	font-size: 13px;
+	line-height: 13px;
+	border: none;
+	background: #06265C;
+	color: white;
+	-webkit-box-shadow: #06265C 0px 0px 5px 0px;
+	box-shadow: #06265C 0px 0px 5px 0px;
+}
+
+#voting-manager div.gwt-ToggleButton.gwt-ToggleButton-down-hovering {
+	background-color: #00a000;
+}
+	
+#voting-manager div.gwt-ToggleButton.gwt-ToggleButton-down {
+	background-color: #008000;
+}
+	
+#voting-manager div.gwt-ToggleButton div.html-face {
+	line-height: normal;
+	padding-top: 1px;
+}
+
+#voting-manager div.gwt-ToggleButton.gwt-ToggleButton-up-hovering {
+	border: none;
+	background: #26467C;
+}
+	
+#voting-manager div.gwt-ToggleButton {
+	vertical-align: -moz-middle-with-baseline;
+	margin: 1px;
+	border-radius: 10px 10px 10px 10px;
+	height: 21px;
+	padding: 2px 10px 2px 10px;
+	font-size: 13px;
+	line-height: 13px;
+	vertical-align: bottom;
+	border: none;
+	background: #06265C;
+	color: white;
+	-webkit-box-shadow: #06265C 0px 0px 5px 0px;
+	box-shadow: #06265C 0px 0px 5px 0px;
+	outline: none;
+}
+
+div#logo {
+	width: 320px; height: 83px; 
+	background: url('400dpiLogo.jpeg');
+	margin-top: 15px; 
+	margin-bottom: 15px;
+}
