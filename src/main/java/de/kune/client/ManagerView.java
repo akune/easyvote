@@ -31,6 +31,8 @@ import com.googlecode.gwt.charts.client.options.Legend;
 import com.googlecode.gwt.charts.client.options.LegendPosition;
 import com.googlecode.gwt.charts.client.options.VAxis;
 
+import de.kune.client.ManagerModel.State;
+
 /**
  * Provides the manager view.
  */
@@ -89,6 +91,7 @@ public class ManagerView {
 			getCloseVotingSessionButton().setVisible(true);
 			getVotingSessionPanel().setVisible(true);
 			getOptionsButton().setVisible(true);
+			getOptionsButton().removeStyleName("disabled");
 			getVotesChartPanel().setVisible(true);
 			break;
 		case VOTING_ROUND_STARTED:
@@ -97,7 +100,8 @@ public class ManagerView {
 			getRealTimeUpdateButton().setVisible(true);
 			getCloseVotingSessionButton().setVisible(false);
 			getVotingSessionPanel().setVisible(true);
-			getOptionsButton().setVisible(false);
+			getOptionsButton().setVisible(true);
+			getOptionsButton().addStyleName("disabled");
 			getVotesChartPanel().setVisible(true);
 			break;
 		default:
@@ -278,8 +282,10 @@ public class ManagerView {
 			optionsButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					getOptionsPanel().center();
-					getOptionsPanel().setPopupPosition(getOptionsPanel().getPopupLeft(), 170);
+					if (model.getState() == State.VOTING_SESSION_STARTED) {
+						getOptionsPanel().center();
+						getOptionsPanel().setPopupPosition(getOptionsPanel().getPopupLeft(), 170);
+					}
 				}
 			});
 		}
@@ -305,6 +311,7 @@ public class ManagerView {
 			voteChartOptions.setVAxis(vAxis);
 			vAxis.setFormat("#%");
 			voteChartOptions.setLegend(Legend.create(LegendPosition.NONE));
+			voteChartOptions.setColors("#06265c");
 		}
 		return voteChartOptions;
 	}
