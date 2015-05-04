@@ -11,6 +11,8 @@ import java.util.Set;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Timer;
@@ -121,6 +123,15 @@ public class Voter {
 			mainPanel().add(pinPanel);
 			pinPanel.add(new Label(messages.enterPin()));
 			final TextBox pinTextBox = new TextBox();
+			pinTextBox.getElement().setAttribute("inputmode", "numeric");
+			pinTextBox.addKeyPressHandler(new KeyPressHandler() {
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					if (event.getNativeEvent().getKeyCode() == 13) {
+						joinSession(pinTextBox.getText().trim());
+					}
+				}
+			});
 			pinPanel.add(pinTextBox);
 			Button joinButton = new Button(messages.joinButton());
 			pinPanel.add(joinButton);
@@ -130,6 +141,7 @@ public class Voter {
 					joinSession(pinTextBox.getText().trim());
 				}
 			});
+			pinTextBox.setFocus(true);
 		} else {
 			joinSession(votingSessionId);
 		}

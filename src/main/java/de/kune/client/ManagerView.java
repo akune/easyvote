@@ -8,6 +8,8 @@ import java.util.Set;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
@@ -66,6 +68,7 @@ public class ManagerView {
 		this.mainPanel.add(getStartSessionPanel());
 		getStartSessionPanel().add(getSessionNameTextBox());
 		getStartSessionPanel().add(getStartSessionButton());
+		getSessionNameTextBox().setFocus(true);
 	}
 
 	public void setModel(ManagerModel model) {
@@ -419,6 +422,14 @@ public class ManagerView {
 	}
 
 	public void setStartVotingSessionAction(final Runnable runnable) {
+		getSessionNameTextBox().addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getNativeEvent().getKeyCode() == 13) {
+					runnable.run();
+				}
+			}
+		});
 		getStartSessionButton().addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
