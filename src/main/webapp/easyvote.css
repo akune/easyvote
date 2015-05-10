@@ -86,6 +86,7 @@ input.gwt-TextBox {
 	input.gwt-TextBox {
 		border: 1px solid rgba(6, 38, 92, 0.7);
 		border-right: 1px solid transparent;
+/* 		width: 480px; */
 	}
 }
 
