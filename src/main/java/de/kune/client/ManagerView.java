@@ -172,7 +172,9 @@ public class ManagerView {
 	private TextBox getSessionNameTextBox() {
 		if (sessionNameTextBox == null) {
 			sessionNameTextBox = new TextBox();
-			sessionNameTextBox.setText(messages.votingSessionLabel());
+			sessionNameTextBox.setText("");
+			sessionNameTextBox.getElement().setAttribute("placeholder",
+					messages.sessionNamePlaceholder());
 		}
 		return sessionNameTextBox;
 	}

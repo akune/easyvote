@@ -28,8 +28,8 @@ public interface ManagerMessages extends Messages {
 	@DefaultMessage("Real-Time Update")
 	String realTimeUpdateToggleButton();
 
-	@DefaultMessage("Voting Session")
-	String votingSessionLabel();
+	@DefaultMessage("Session Name")
+	String sessionNamePlaceholder();
 
 	@DefaultMessage("Start Session")
 	String beginVotingSessionButton();
