@@ -61,10 +61,10 @@ public class ManagerView {
 	private ColumnChartOptions voteChartOptions;
 	private ColumnChart votesChart;
 	private Anchor optionsButton;
+	private PopupPanel blockPanel;
 
 	public void initialize(Panel mainPanel) {
 		this.mainPanel = mainPanel;
-
 		this.mainPanel.add(getStartSessionPanel());
 		getStartSessionPanel().add(getSessionNameTextBox());
 		getStartSessionPanel().add(getStartSessionButton());
@@ -441,5 +441,19 @@ public class ManagerView {
 	public native void closeWindow() /*-{
 										$wnd.close();
 										}-*/;
+
+	public void blockUi() {
+		if (blockPanel == null) {
+			blockPanel = new PopupPanel(false, true);
+			blockPanel.setAnimationEnabled(false);
+		}
+		blockPanel.show();
+	}
+
+	public void unblockUi() {
+		if (blockPanel != null) {
+			blockPanel.hide();
+		}
+	}
 
 }

@@ -38,32 +38,31 @@ public class ManagerController {
 		});
 
 		if (startVotingSession != null
-				|| view.getMainPanel().getElement().hasAttribute("start-session")) {
-			// getStartSessionPanel().setVisible(false);
+				|| view.getMainPanel().getElement()
+						.hasAttribute("start-session")) {
+			view.blockUi();
 			votingService.createVotingSession(startVotingSession,
 					new AsyncCallback<String>() {
-
 						@Override
 						public void onFailure(Throwable caught) {
-							// getStartSessionPanel().setVisible(true);
+							ManagerController.this.view.unblockUi();
 						}
 
 						@Override
 						public void onSuccess(final String votingSessionId) {
 							votingService.getSessionPin(votingSessionId,
 									new AsyncCallback<String>() {
-
 										@Override
 										public void onSuccess(
 												String votingSessionPin) {
 											beginVotingSession(votingSessionId,
 													votingSessionPin);
+											ManagerController.this.view.unblockUi();
 										}
 
 										@Override
 										public void onFailure(Throwable caught) {
-											// getStartSessionPanel().setVisible(
-											// true);
+											ManagerController.this.view.unblockUi();
 										}
 									});
 						}
@@ -83,7 +82,6 @@ public class ManagerController {
 				}
 			}
 		});
-
 		view.updateVisibilityStates();
 		view.setStartNewVotingRoundAction(new Runnable() {
 			@Override
@@ -100,17 +98,20 @@ public class ManagerController {
 		view.setCloseVotingSessionAction(new Runnable() {
 			@Override
 			public void run() {
+				view.blockUi();
 				evaluateVotesTimer.cancel();
 				votingService.closeVotingSession(model.getVotingSessionId(),
 						new AsyncCallback<Void>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								view.updateVisibilityStates();
+								view.unblockUi();
 							}
 
 							@Override
 							public void onSuccess(Void result) {
 								view.updateVisibilityStates();
+								view.unblockUi();
 								view.closeWindow();
 							}
 						});
@@ -131,6 +132,7 @@ public class ManagerController {
 	}
 
 	private void beginVotingRound() {
+		view.blockUi();
 		votingService.beginVotingRound(model.getVotingSessionId(),
 				"Voting Round", model.getOptionsKey(),
 				model.isMultipleSelectionAllowed(), new AsyncCallback<Void>() {
@@ -138,6 +140,7 @@ public class ManagerController {
 					public void onFailure(Throwable caught) {
 						view.updateVisibilityStates();
 						evaluateVotesTimer.cancel();
+						view.unblockUi();
 					}
 
 					@Override
@@ -149,23 +152,22 @@ public class ManagerController {
 						view.updateVotesChart(false);
 						view.closeOptionsPanel();
 						if (view.isRealTimeUpdateSelected()
-								|| view.getMainPanel().getElement().hasAttribute(
-										"real-time-update")) {
+								|| view.getMainPanel().getElement()
+										.hasAttribute("real-time-update")) {
 							evaluateVotesTimer.schedule(1000);
 						}
+						view.unblockUi();
 					}
 				});
 	}
 
 	protected void endVotingRound() {
-		// getEndVotingRoundButton().setVisible(false);
+		view.blockUi();
 		votingService.endVotingRound(model.getVotingSessionId(),
 				new AsyncCallback<Void>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						// getEndVotingRoundButton().setVisible(true);
-						// getRealTimeUpdateButton().setVisible(true);
-						// evaluateVotes();
+						view.unblockUi();
 					}
 
 					@Override
@@ -173,6 +175,7 @@ public class ManagerController {
 						model.endVotingRound();
 						view.updateVisibilityStates();
 						evaluateVotes();
+						view.unblockUi();
 					}
 				});
 	}
@@ -242,7 +245,7 @@ public class ManagerController {
 					});
 		}
 	};
-	
+
 	private void evaluateVotes() {
 		GWT.log("Evaluating Votes for " + model.getVotingSessionId());
 		votingService.getVotes(model.getVotingSessionId(),

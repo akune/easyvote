@@ -121,9 +121,9 @@ public class Voter {
 		if (votingSessionId == null) {
 			FlowPanel pinPanel = new FlowPanel();
 			mainPanel().add(pinPanel);
-			pinPanel.add(new Label(messages.enterPin()));
 			final TextBox pinTextBox = new TextBox();
-			pinTextBox.getElement().setAttribute("inputmode", "numeric");
+			pinTextBox.getElement().setAttribute("type", "tel");
+			pinTextBox.getElement().setAttribute("placeholder", messages.pinPlaceholder());
 			pinTextBox.addKeyPressHandler(new KeyPressHandler() {
 				@Override
 				public void onKeyPress(KeyPressEvent event) {
@@ -141,7 +141,13 @@ public class Voter {
 					joinSession(pinTextBox.getText().trim());
 				}
 			});
-			pinTextBox.setFocus(true);
+			new Timer() {
+				@Override
+				public void run() {
+					pinTextBox.setFocus(true);
+				}
+				
+			}.schedule(500);
 		} else {
 			joinSession(votingSessionId);
 		}

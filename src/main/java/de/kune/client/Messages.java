@@ -1,15 +1,17 @@
 package de.kune.client;
 
-
-
 public interface Messages extends com.google.gwt.i18n.client.Messages {
-  
-  String noSuchSession();
 
-  String enterPin();
+	@DefaultMessage("Invalid PIN")
+	String noSuchSession();
 
-  String joinButton();
+	@DefaultMessage("Join")
+	String joinButton();
 
-  String waitingForVotingRound();
-  
+	@DefaultMessage("Please wait for the voting round to begin.")
+	String waitingForVotingRound();
+
+	@DefaultMessage("PIN")
+	String pinPlaceholder();
+
 }
