@@ -33,7 +33,7 @@ import com.googlecode.gwt.charts.client.options.Legend;
 import com.googlecode.gwt.charts.client.options.LegendPosition;
 import com.googlecode.gwt.charts.client.options.VAxis;
 
-import de.kune.client.OptionsConstants;
+import de.kune.client.common.OptionsConstants;
 import de.kune.client.manager.ManagerModel.State;
 
 /**

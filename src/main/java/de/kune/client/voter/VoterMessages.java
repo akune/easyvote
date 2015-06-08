@@ -1,6 +1,6 @@
-package de.kune.client;
+package de.kune.client.voter;
 
-public interface Messages extends com.google.gwt.i18n.client.Messages {
+public interface VoterMessages extends com.google.gwt.i18n.client.Messages {
 
 	@DefaultMessage("Invalid PIN")
 	String noSuchSession();

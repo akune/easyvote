@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import de.kune.client.Options;
+import de.kune.client.common.Options;
 
 public class VotingSession implements Serializable {
 

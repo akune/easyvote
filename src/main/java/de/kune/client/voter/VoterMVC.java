@@ -27,10 +27,9 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
 
-import de.kune.client.Messages;
-import de.kune.client.Options;
-import de.kune.client.OptionsConstants;
 import de.kune.client.VotingClientServiceAsync;
+import de.kune.client.common.Options;
+import de.kune.client.common.OptionsConstants;
 
 public class VoterMVC {
 
@@ -63,7 +62,7 @@ public class VoterMVC {
 
 	private final Panel mainPanel;
 
-	private final Messages messages;
+	private final VoterMessages messages;
 
 	private void joinSession(final String votingSessionId) {
 		votingService.join(votingSessionId, new AsyncCallback<String>() {
@@ -120,7 +119,7 @@ public class VoterMVC {
 		return mainPanel;
 	}
 
-	public VoterMVC(Panel mainPanel, Messages messages) {
+	public VoterMVC(Panel mainPanel, VoterMessages messages) {
 		this.mainPanel = mainPanel;
 		this.messages = messages;
 		if (votingSessionId == null) {

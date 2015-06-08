@@ -5,6 +5,8 @@ import java.util.Set;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+import de.kune.client.common.Options;
+
 @RemoteServiceRelativePath("vote")
 public interface VotingClientService extends RemoteService {
 

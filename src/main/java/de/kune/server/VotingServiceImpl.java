@@ -10,9 +10,9 @@ import javax.servlet.ServletException;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import de.kune.client.Options;
 import de.kune.client.VotingClientService;
 import de.kune.client.VotingManagerService;
+import de.kune.client.common.Options;
 
 /**
  * The server side implementation of the RPC service.

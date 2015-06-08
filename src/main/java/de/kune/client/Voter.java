@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import de.kune.client.voter.VoterMessages;
 import de.kune.client.voter.VoterMVC;
 
 /**
@@ -15,7 +16,7 @@ import de.kune.client.voter.VoterMVC;
  */
 public class Voter implements EntryPoint {
 
-	private final Messages messages = GWT.create(Messages.class);
+	private final VoterMessages messages = GWT.create(VoterMessages.class);
 
 	protected Panel mainPanel() {
 		if (RootPanel.get("voting-client") == null) {
