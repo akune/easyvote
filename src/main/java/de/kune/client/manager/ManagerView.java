@@ -1,4 +1,4 @@
-package de.kune.client;
+package de.kune.client.manager;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,7 +33,8 @@ import com.googlecode.gwt.charts.client.options.Legend;
 import com.googlecode.gwt.charts.client.options.LegendPosition;
 import com.googlecode.gwt.charts.client.options.VAxis;
 
-import de.kune.client.ManagerModel.State;
+import de.kune.client.OptionsConstants;
+import de.kune.client.manager.ManagerModel.State;
 
 /**
  * Provides the manager view.

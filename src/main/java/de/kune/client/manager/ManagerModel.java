@@ -1,7 +1,9 @@
-package de.kune.client;
+package de.kune.client.manager;
 
 import java.util.Map;
 import java.util.Set;
+
+import de.kune.client.Options;
 
 /**
  * Provides the manager model that is its state.

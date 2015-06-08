@@ -1,4 +1,4 @@
-package de.kune.client;
+package de.kune.client.manager;
 
 import static de.kune.client.VotingManagerServiceAsync.Util.getInstance;
 
@@ -11,7 +11,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import de.kune.client.ManagerModel.State;
+import de.kune.client.VotingManagerServiceAsync;
+import de.kune.client.manager.ManagerModel.State;
 
 /**
  * Controls the manager view and model.

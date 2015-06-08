@@ -1,4 +1,4 @@
-package de.kune.client;
+package de.kune.client.manager;
 
 import com.google.gwt.i18n.client.Messages;
 

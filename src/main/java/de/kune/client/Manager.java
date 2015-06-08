@@ -7,6 +7,10 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 
+import de.kune.client.manager.ManagerController;
+import de.kune.client.manager.ManagerModel;
+import de.kune.client.manager.ManagerView;
+
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
