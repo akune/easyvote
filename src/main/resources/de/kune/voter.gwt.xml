@@ -14,7 +14,7 @@
   <inherits name='de.novanic.eventservice.GWTEventService' />
 
   <!-- Specify the app entry point class.                         -->
-  <entry-point class='de.kune.client.VoterModule' />
+  <entry-point class='de.kune.client.Voter' />
 
   <extend-property name="locale" values="de"/>
   <set-configuration-property name="locale.useragent" value="Y"/>
