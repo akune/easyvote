@@ -1,6 +1,6 @@
 package de.kune.client.voter;
 
-import static de.kune.client.VotingClientServiceAsync.Util.getInstance;
+import static de.kune.shared.VotingClientServiceAsync.Util.getInstance;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ToggleButton;
 
-import de.kune.client.VotingClientServiceAsync;
+import de.kune.shared.VotingClientServiceAsync;
 import de.kune.client.common.Options;
 import de.kune.client.common.OptionsConstants;
 

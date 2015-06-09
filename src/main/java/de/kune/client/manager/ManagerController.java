@@ -1,6 +1,6 @@
 package de.kune.client.manager;
 
-import static de.kune.client.VotingManagerServiceAsync.Util.getInstance;
+import static de.kune.shared.VotingManagerServiceAsync.Util.getInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import de.kune.client.VotingManagerServiceAsync;
+import de.kune.shared.VotingManagerServiceAsync;
 import de.kune.client.manager.ManagerModel.State;
 
 /**

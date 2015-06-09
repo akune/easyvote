@@ -1,4 +1,4 @@
-package de.kune.client;
+package de.kune.shared;
 
 import java.util.Set;
 
