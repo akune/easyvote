@@ -1,4 +1,4 @@
-package de.kune.client;
+package de.kune.client.common;
 
 import java.util.ArrayList;
 import java.util.List;
