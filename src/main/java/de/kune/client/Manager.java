@@ -48,6 +48,12 @@ public class Manager implements EntryPoint {
 				model.updateOptions("yesNo", false);
 			}
 		});
+		result.put("scrumLabel", new Runnable() {
+			@Override
+			public void run() {
+				model.updateOptions("scrum", false);
+			}
+		});
 		return result;
 	}
 

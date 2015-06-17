@@ -105,25 +105,6 @@ public class VoterView {
 				event.setMessage("Are you sure?");
 			}
 		});
-//		Window.addCloseHandler(new CloseHandler<Window>() {
-//			@Override
-//			public void onClose(CloseEvent<Window> event) {
-//				votingService.leave(votingSessionId, voterId,
-//						new AsyncCallback<Void>() {
-//							@Override
-//							public void onSuccess(Void result) {
-//								GWT.log("Left session "
-//										+ votingSessionId);
-//							}
-//
-//							@Override
-//							public void onFailure(Throwable caught) {
-//								GWT.log("Could not leave.");
-//							}
-//						});
-//
-//			}
-//		});
 		mainPanel.clear();
 		mainPanel.add(getVotingSessionPanel());
 		mainPanel.add(getWaitingForVotingRoundPanel());
