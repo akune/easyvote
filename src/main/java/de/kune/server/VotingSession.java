@@ -90,6 +90,9 @@ public class VotingSession implements Serializable {
 			throw new IllegalArgumentException("Invalid options");
 		}
 		votes.put(voterId, new LinkedHashSet<String>(options));
+		synchronized (this) {
+			notifyAll();
+		}
 	}
 
 	public void setRoundTitle(String title) {
@@ -135,6 +138,16 @@ public class VotingSession implements Serializable {
 		updateActivityTimestamp();
 		votes.remove(voterId);
 		voters.remove(voterId);
+	}
+	
+	public void waitForVote(int timeoutInMillies) {
+		synchronized (this) {
+			try {
+				wait(timeoutInMillies);
+			} catch (InterruptedException e) {
+				// Do nothing. 
+			}
+		}
 	}
 
 }

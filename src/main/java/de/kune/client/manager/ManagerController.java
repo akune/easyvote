@@ -12,7 +12,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import de.kune.shared.VotingManagerServiceAsync;
-import de.kune.client.manager.ManagerModel.State;
 
 /**
  * Controls the manager view and model.
@@ -26,6 +25,8 @@ public class ManagerController {
 
 	private ManagerModel model;
 	private ManagerView view;
+
+	private boolean evaluatingVotes;
 
 	public void initialize(ManagerModel model, ManagerView view) {
 		this.model = model;
@@ -100,7 +101,8 @@ public class ManagerController {
 			@Override
 			public void run() {
 				view.blockUi();
-				evaluateVotesTimer.cancel();
+//				evaluateVotesTimer.cancel();
+				stopEvaluatingVotes();
 				votingService.closeVotingSession(model.getVotingSessionId(),
 						new AsyncCallback<Void>() {
 							@Override
@@ -121,15 +123,44 @@ public class ManagerController {
 		view.setRealTimeUpdateActions(new Runnable() {
 			@Override
 			public void run() {
-				evaluateVotesTimer.schedule(1000);
+//				evaluateVotesTimer.schedule(1000);
+				startEvaluatingVotes();
 			}
 		}, new Runnable() {
 			@Override
 			public void run() {
-				evaluateVotesTimer.cancel();
+//				evaluateVotesTimer.cancel();
+				stopEvaluatingVotes();
 			}
 		});
-		evaluateParticipantsTimer.schedule(1000);
+//		evaluateParticipantsTimer.schedule(1000);
+	}
+
+	protected void startEvaluatingVotes() {
+		GWT.log("Beginning to wait for votes...");
+		evaluatingVotes = true;
+		votingService.waitForNewVotes(model.getVotingSessionId(), new AsyncCallback<Map<String,Set<String>>>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				if (evaluatingVotes) {
+					stopEvaluatingVotes();
+					endVotingRound();
+				}
+			}
+			@Override
+			public void onSuccess(Map<String, Set<String>> result) {
+				if (evaluatingVotes) {
+					startEvaluatingVotes();
+					model.updateVotes(result);
+					view.updateVotesChart(false);
+					GWT.log("Received votes after waiting: " + result);
+				}
+			}
+		});
+	}
+	
+	protected void stopEvaluatingVotes() {
+		evaluatingVotes = false;
 	}
 
 	private void beginVotingRound() {
@@ -140,7 +171,8 @@ public class ManagerController {
 					@Override
 					public void onFailure(Throwable caught) {
 						view.updateVisibilityStates();
-						evaluateVotesTimer.cancel();
+//						evaluateVotesTimer.cancel();
+						stopEvaluatingVotes();
 						view.unblockUi();
 					}
 
@@ -155,7 +187,7 @@ public class ManagerController {
 						if (view.isRealTimeUpdateSelected()
 								|| view.getMainPanel().getElement()
 										.hasAttribute("real-time-update")) {
-							evaluateVotesTimer.schedule(1000);
+//							evaluateVotesTimer.schedule(1000);
 						}
 						view.unblockUi();
 					}
@@ -181,36 +213,36 @@ public class ManagerController {
 				});
 	}
 
-	private final Timer evaluateVotesTimer = new Timer() {
-		@Override
-		public void run() {
-			GWT.log("Evaluating Votes for " + model.getVotingSessionId());
-			votingService.getVotes(model.getVotingSessionId(),
-					new AsyncCallback<Map<String, Set<String>>>() {
-
-						@Override
-						public void onFailure(Throwable caught) {
-							GWT.log("Could not get votes");
-							evaluateVotesTimer.schedule(1000);
-						}
-
-						@Override
-						public void onSuccess(Map<String, Set<String>> votes) {
-							GWT.log("Current votes: " + votes);
-							if (model.getState() == State.VOTING_ROUND_STARTED) {
-								model.updateVotes(votes);
-								view.updateVotesChart(false);
-							}
-							evaluateVotesTimer.schedule(1000);
-						}
-					});
-		}
-	};
+//	private final Timer evaluateVotesTimer = new Timer() {
+//		@Override
+//		public void run() {
+////			GWT.log("Evaluating Votes for " + model.getVotingSessionId());
+//			votingService.getVotes(model.getVotingSessionId(),
+//					new AsyncCallback<Map<String, Set<String>>>() {
+//
+//						@Override
+//						public void onFailure(Throwable caught) {
+//							GWT.log("Could not get votes");
+//							evaluateVotesTimer.schedule(1000);
+//						}
+//
+//						@Override
+//						public void onSuccess(Map<String, Set<String>> votes) {
+////							GWT.log("Current votes: " + votes);
+//							if (model.getState() == State.VOTING_ROUND_STARTED) {
+//								model.updateVotes(votes);
+//								view.updateVotesChart(false);
+//							}
+//							evaluateVotesTimer.schedule(1000);
+//						}
+//					});
+//		}
+//	};
 
 	private final Timer evaluateParticipantsTimer = new Timer() {
 		@Override
 		public void run() {
-			GWT.log("Evaluating participants for " + model.getVotingSessionId());
+//			GWT.log("Evaluating participants for " + model.getVotingSessionId());
 			votingService.getVoters(model.getVotingSessionId(),
 					new AsyncCallback<Set<String>>() {
 						@Override
@@ -248,7 +280,7 @@ public class ManagerController {
 	};
 
 	private void evaluateVotes() {
-		GWT.log("Evaluating Votes for " + model.getVotingSessionId());
+//		GWT.log("Evaluating Votes for " + model.getVotingSessionId());
 		votingService.getVotes(model.getVotingSessionId(),
 				new AsyncCallback<Map<String, Set<String>>>() {
 

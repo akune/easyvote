@@ -182,7 +182,7 @@ public class VoterView {
 	protected void triggerVote() {
 		GWT.log("Triggering vote.");
 		voteTimer.cancel();
-		voteTimer.schedule(1000);
+		voteTimer.schedule(250);
 	}
 
 	private Set<String> determineVote() {

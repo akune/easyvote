@@ -151,4 +151,11 @@ public class VotingServiceImpl extends RemoteServiceServlet implements
 		return getVotingSessionBySessionId(sessionId).getPin();
 	}
 
+	@Override
+	public Map<String, Set<String>> waitForNewVotes(String sessionId) {
+		VotingSession session = getVotingSessionBySessionId(sessionId);
+		session.waitForVote(30000);
+		return getVotes(sessionId);
+	}
+
 }

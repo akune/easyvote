@@ -21,6 +21,8 @@ public interface VotingManagerService extends RemoteService {
 	void endVotingRound(String sessionId);
 
 	Map<String, Set<String>> getVotes(String sessionId);
+	
+	Map<String, Set<String>> waitForNewVotes(String sessionId);
 
 	void beginVotingRound(String sessionId, String title, String optionsKey,
 			boolean multipleSelectionAllowed);
