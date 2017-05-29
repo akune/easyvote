@@ -8,6 +8,6 @@ sudo: required
 
 script:
   - mvn clean verify
-#  - mvn docker:build
-#  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-#  - docker push kune/easyvote;
+  - mvn docker:build
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+  - docker push kune/easyvote;
