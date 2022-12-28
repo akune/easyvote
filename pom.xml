@@ -20,16 +20,16 @@
   <properties>
     <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
 
-    <maven.tomcat.port>8082</maven.tomcat.port>
+    <maven.tomcat.port>8080</maven.tomcat.port>
     <maven.tomcat.ajp.port>8182</maven.tomcat.ajp.port>
     <maven.tomcat.path>/</maven.tomcat.path>
 
     <!-- Convenience property to set the GWT version -->
-    <gwtVersion>2.7.0</gwtVersion>
+    <gwtVersion>2.9.0</gwtVersion>
 
     <!-- GWT needs at least java 1.6 -->
-    <maven.compiler.source>1.6</maven.compiler.source>
-    <maven.compiler.target>1.6</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -99,7 +99,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>gwt-maven-plugin</artifactId>
-        <version>2.7.0</version>
+        <version>2.9.0</version>
         <executions>
           <execution>
             <id>gwt:generateAsync</id>
